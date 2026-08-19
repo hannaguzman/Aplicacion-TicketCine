@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TicketCine - Reserva de entradas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>TicketCine</h1>
+    <p>Reserva tus entradas de forma rápida y sencilla</p>
+  </header>
+
+  <main>
+    <section id="movies-section">
+      <h2>Películas disponibles</h2>
+      <div id="movies-container" class="cards"></div>
+    </section>
+
+    <aside id="reservation-panel">
+      <h2>Reserva</h2>
+      <div id="selected-movie">Selecciona una película</div>
+
+      <div id="showtimes" class="controls"></div>
+
+      <label for="quantity">Cantidad de entradas</label>
+      <input type="number" id="quantity" min="1" value="1">
+
+      <button id="confirm-btn" disabled>Confirmar reserva</button>
+
+      <div id="success-message" class="hidden">
+        <h3>Reserva confirmada</h3>
+        <p id="confirmation-text"></p>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <p>&copy; TicketCine</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

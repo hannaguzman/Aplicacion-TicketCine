@@ -1,0 +1,171 @@
+/* styles.css - Estilo moderno en negro y amarillo para TicketCine */
+:root{
+  --bg:#0b0b0b;            /* fondo principal: negro profundo */
+  --surface:#0f1720;       /* tarjetas y paneles */
+  --card:#0f1720;
+  --accent:#ffd54f;        /* amarillo vibrante */
+  --accent-600:#f7c948;
+  --muted:#cbd5e1;         /* texto secundario claro */
+  --text:#f8fafc;          /* texto principal claro */
+  --success:#16a34a;
+  --glass:rgba(255,255,255,0.03);
+  --max-width:1100px;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:linear-gradient(180deg,var(--bg) 0%, #071018 100%);
+  color:var(--text);
+  display:flex;
+  min-height:100vh;
+  flex-direction:column;
+  align-items:center;
+}
+
+header{
+  width:100%;
+  background:linear-gradient(90deg,#000 0%, #07141f 100%);
+  color:var(--text);
+  padding:22px 18px;
+  text-align:center;
+  box-shadow:0 4px 18px rgba(0,0,0,.6);
+  border-bottom:1px solid rgba(255,213,79,0.06);
+}
+header h1{margin:0;font-size:1.6rem;letter-spacing:0.6px}
+header p{margin:6px 0 0;color:var(--muted)}
+
+main{
+  width:100%;
+  max-width:var(--max-width);
+  display:flex;
+  gap:24px;
+  padding:28px 16px;
+  align-items:flex-start;
+}
+
+/* Películas (izquierda) */
+#movies-section{flex:1 1 0}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:18px;
+  margin-top:14px;
+}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:12px;
+  padding:12px;
+  box-shadow:0 8px 20px rgba(2,6,23,.45);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  border:1px solid rgba(255,255,255,0.03);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.card:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(0,0,0,.6)}
+.card img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.03);
+}
+.card h3{margin:0;font-size:1.05rem}
+.card p{margin:0;color:var(--muted);font-size:0.95rem;flex:1}
+.card .actions{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:6px;
+}
+.btn{
+  background:var(--accent);
+  color:#071018;
+  border:none;
+  padding:9px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+  box-shadow:0 6px 18px rgba(255,213,79,0.08);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(255,213,79,0.12)}
+.btn.secondary{
+  background:transparent;
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,0.04);
+}
+
+/* Panel de reserva (derecha) */
+#reservation-panel{
+  width:360px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 12px 30px rgba(2,6,23,.5);
+  position:sticky;
+  top:28px;
+  height:fit-content;
+  border:1px solid rgba(255,255,255,0.03);
+}
+#reservation-panel h2{margin:0 0 8px 0}
+#selected-movie{font-weight:700;margin-bottom:12px;color:var(--muted)}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.controls button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.04);
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  font-weight:600;
+}
+.controls button.active{
+  background:linear-gradient(90deg,var(--accent),var(--accent-600));
+  color:#071018;
+  border-color:rgba(0,0,0,0.12);
+  box-shadow:0 6px 16px rgba(0,0,0,0.45);
+}
+
+label{display:block;margin-top:6px;color:var(--muted);font-size:0.95rem}
+#quantity{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)}
+#confirm-btn{
+  width:100%;
+  margin-top:14px;
+  padding:12px;
+  border-radius:10px;
+  font-weight:800;
+  letter-spacing:0.4px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-600));
+  color:#071018;
+  border:none;
+  cursor:pointer;
+  box-shadow:0 14px 30px rgba(255,213,79,0.12);
+}
+#confirm-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+/* Mensaje de éxito */
+.hidden{display:none}
+#success-message{
+  margin-top:14px;
+  padding:12px;
+  border-radius:10px;
+  background:linear-gradient(180deg, rgba(255,250,235,0.04), rgba(255,250,235,0.02));
+  border:1px solid rgba(255,213,79,0.09);
+}
+#success-message h3{margin:0;color:var(--accent)}
+#confirmation-text{margin:6px 0 0;color:var(--muted);font-size:0.95rem}
+
+/* Footer */
+footer{width:100%;text-align:center;padding:14px 0;color:var(--muted);font-size:0.9rem;margin-top:auto}
+
+@media(max-width:920px){
+  main{flex-direction:column}
+  #reservation-panel{width:100%;position:relative;top:0}
+  #reservation-panel{order:2}
+  #movies-section{order:1}
+}

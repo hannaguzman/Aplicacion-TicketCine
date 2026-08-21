@@ -1,4 +1,4 @@
-/* styles.css - Estilo moderno en negro y amarillo para TicketCine (actualizado para usar imágenes reales en el loader) */
+/* styles.css - Estilo moderno en negro y amarillo para TicketCine (loader usa imágenes reales) */
 :root{
   --bg:#0b0b0b;            /* fondo principal: negro profundo */
   --surface:#0f1720;       /* tarjetas y paneles */
@@ -39,7 +39,7 @@ body{
 #loader-overlay.loaded{opacity:0;visibility:hidden}
 .loader-content{
   display:flex;
-  gap:28px; /* separación entre reel y spool (imagen 3) */
+  gap:28px; /* separación entre reel y spool */
   align-items:center;
   padding:24px;
 }
@@ -50,9 +50,10 @@ body{
   max-width:100%;
   height:auto;
   filter: drop-shadow(0 8px 22px rgba(0,0,0,0.6));
+  background:transparent;
 }
 
-/* Tamaños por defecto: reel gira, spool estático */
+/* Tamaños por defecto: ahora la imagen 20260820144208 (reel) gira, la otra se mantiene */
 .reel-img{width:220px;height:220px;object-fit:contain;transform-origin:50% 50%;animation:spin 2.2s linear infinite}
 .spool-img{width:140px;height:86px;object-fit:contain}
 
@@ -60,8 +61,6 @@ body{
 @media (prefers-reduced-motion: reduce){
   .reel-img{animation: none}
 }
-
-/* Asegurar que solo la carretilla gira: mantener la bobina estática */
 
 /* --- Fin Loader styles --- */
 

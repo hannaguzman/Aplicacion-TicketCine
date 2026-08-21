@@ -25,6 +25,42 @@ body{
   align-items:center;
 }
 
+/* --- Loader styles (pantalla de carga) --- */
+#loader-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(180deg, #00122b 0%, #3b0f6f 100%); /* azul marino -> morado */
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#loader-overlay.loaded{opacity:0;visibility:hidden}
+.loader-content{
+  display:flex;
+  gap:28px; /* separación entre reel y spool (imagen 3) */
+  align-items:center;
+  padding:24px;
+}
+/* Tamaños responsivos */
+.reel{width:180px;height:180px}
+.spool{width:140px;height:84px}
+
+/* Animación de rotación (hacia la derecha/horario) */
+.reel{transform-origin:50% 50%;animation:spin 2.2s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Si el usuario prefiere reducir animaciones */
+@media (prefers-reduced-motion: reduce){
+  .reel{animation: none}
+}
+
+/* Acento leve para los SVG (bordes blancos) */
+.reel, .spool{filter:drop-shadow(0 6px 20px rgba(0,0,0,0.6));opacity:0.98}
+
+/* --- Fin Loader styles --- */
+
 header{
   width:100%;
   background:linear-gradient(90deg,#000 0%, #07141f 100%);
@@ -168,4 +204,7 @@ footer{width:100%;text-align:center;padding:14px 0;color:var(--muted);font-size:
   #reservation-panel{width:100%;position:relative;top:0}
   #reservation-panel{order:2}
   #movies-section{order:1}
+  .loader-content{gap:14px}
+  .reel{width:140px;height:140px}
+  .spool{width:120px;height:72px}
 }

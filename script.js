@@ -1,5 +1,28 @@
 /* script.js - Lógica para TicketCine (ES) */
 document.addEventListener('DOMContentLoaded', ()=> {
+  // --- Loader handling ---
+  const loader = document.getElementById('loader-overlay');
+
+  // Hide loader when window finishes loading, or after a fallback timeout
+  function hideLoader(){
+    if(!loader) return;
+    loader.classList.add('loaded');
+    // allow CSS transition to finish before removing from flow
+    setTimeout(()=>{
+      loader.style.display = 'none';
+    }, 700);
+  }
+
+  window.addEventListener('load', ()=>{
+    hideLoader();
+  });
+
+  // Fallback: if load takes too long, hide after 4s
+  setTimeout(()=>{
+    if(loader && getComputedStyle(loader).display !== 'none') hideLoader();
+  }, 4000);
+  // --- End loader handling ---
+
   // Datos de ejemplo: título, sinopsis corta, imagen (placeholder), horarios
   const movies = [
     {

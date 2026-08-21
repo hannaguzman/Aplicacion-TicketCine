@@ -1,4 +1,4 @@
-/* styles.css - Estilo moderno en negro y amarillo para TicketCine */
+/* styles.css - Estilo moderno en negro y amarillo para TicketCine (actualizado para usar imágenes reales en el loader) */
 :root{
   --bg:#0b0b0b;            /* fondo principal: negro profundo */
   --surface:#0f1720;       /* tarjetas y paneles */
@@ -43,21 +43,25 @@ body{
   align-items:center;
   padding:24px;
 }
-/* Tamaños responsivos */
-.reel{width:180px;height:180px}
-.spool{width:140px;height:84px}
 
-/* Animación de rotación (hacia la derecha/horario) */
-.reel{transform-origin:50% 50%;animation:spin 2.2s linear infinite}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-/* Si el usuario prefiere reducir animaciones */
-@media (prefers-reduced-motion: reduce){
-  .reel{animation: none}
+/* Images used as loader elements */
+.reel-img, .spool-img{
+  display:block;
+  max-width:100%;
+  height:auto;
+  filter: drop-shadow(0 8px 22px rgba(0,0,0,0.6));
 }
 
-/* Acento leve para los SVG (bordes blancos) */
-.reel, .spool{filter:drop-shadow(0 6px 20px rgba(0,0,0,0.6));opacity:0.98}
+/* Tamaños por defecto: reel gira, spool estático */
+.reel-img{width:220px;height:220px;object-fit:contain;transform-origin:50% 50%;animation:spin 2.2s linear infinite}
+.spool-img{width:140px;height:86px;object-fit:contain}
+
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){
+  .reel-img{animation: none}
+}
+
+/* Asegurar que solo la carretilla gira: mantener la bobina estática */
 
 /* --- Fin Loader styles --- */
 
@@ -205,6 +209,6 @@ footer{width:100%;text-align:center;padding:14px 0;color:var(--muted);font-size:
   #reservation-panel{order:2}
   #movies-section{order:1}
   .loader-content{gap:14px}
-  .reel{width:140px;height:140px}
-  .spool{width:120px;height:72px}
+  .reel-img{width:160px;height:160px}
+  .spool-img{width:120px;height:72px}
 }

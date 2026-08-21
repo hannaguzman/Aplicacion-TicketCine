@@ -11,56 +11,11 @@
   <!-- Loader overlay: pantalla de carga antes de ingresar al sitio -->
   <div id="loader-overlay" role="status" aria-label="Cargando sitio">
     <div class="loader-content">
-      <!-- Reel (gira) - representación SVG simple -->
-      <svg class="reel" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <filter id="inset-shadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feOffset dx="0" dy="1" />
-            <feGaussianBlur stdDeviation="1.2" result="offset-blur" />
-            <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse" />
-            <feFlood flood-color="#000" flood-opacity="0.45" result="color" />
-            <feComposite operator="in" in="color" in2="inverse" result="shadow" />
-            <feComposite operator="over" in="shadow" in2="SourceGraphic" />
-          </filter>
-        </defs>
-        <g filter="url(#inset-shadow)">
-          <circle cx="100" cy="100" r="82" fill="none" stroke="#fff" stroke-width="6" opacity="0.95" />
-          <circle cx="100" cy="100" r="36" fill="none" stroke="#fff" stroke-width="6" opacity="0.95" />
-          <!-- Spokes -->
-          <g stroke="#fff" stroke-width="6" stroke-linecap="round">
-            <line x1="100" y1="18" x2="100" y2="60" />
-            <line x1="100" y1="182" x2="100" y2="140" />
-            <line x1="18" y1="100" x2="60" y2="100" />
-            <line x1="182" y1="100" x2="140" y2="100" />
-            <line x1="30" y1="30" x2="62" y2="62" />
-            <line x1="170" y1="170" x2="138" y2="138" />
-            <line x1="30" y1="170" x2="62" y2="138" />
-            <line x1="170" y1="30" x2="138" y2="62" />
-          </g>
-        </g>
-      </svg>
+      <!-- Reel (gira) - imagen subida al repositorio -->
+      <img class="reel-img" src="168 sin título_20260820144146.png" alt="Carrete girando" aria-hidden="true">
 
-      <!-- Spool (estática) - representación SVG simple -->
-      <svg class="spool" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round">
-          <ellipse cx="100" cy="78" rx="70" ry="22" fill="none" />
-          <ellipse cx="100" cy="48" rx="34" ry="9" fill="none" />
-          <rect x="30" y="56" width="140" height="22" rx="8" fill="none" />
-          <!-- Perforaciones -->
-          <g stroke="#fff" stroke-width="3">
-            <g transform="translate(30,68)">
-              <rect x="6" y="2" width="10" height="4" />
-              <rect x="26" y="2" width="10" height="4" />
-              <rect x="46" y="2" width="10" height="4" />
-              <rect x="66" y="2" width="10" height="4" />
-              <rect x="86" y="2" width="10" height="4" />
-              <rect x="106" y="2" width="10" height="4" />
-            </g>
-          </g>
-          <!-- Cable hacia reel -->
-          <path d="M150 40 C160 20, 140 8, 110 28" stroke="#fff" stroke-width="4" fill="none" />
-        </g>
-      </svg>
+      <!-- Spool (estática) - imagen subida al repositorio -->
+      <img class="spool-img" src="168 sin título_20260820144208.png" alt="Bobina estática" aria-hidden="true">
     </div>
   </div>
 

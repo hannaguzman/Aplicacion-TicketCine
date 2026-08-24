@@ -1,82 +1,78 @@
-/* styles.css - Updated: center logo exactly middle and adjust background to dark gray like example */
+/* styles.css - Main site styled to resemble Cinemark dark layout + loader fade */
 :root{
-  --bg:#1f1f1f; /* updated background close to the example */
-  --surface:#0f1720;
-  --card:#0f1720;
-  --accent:#ffd54f;
-  --muted:#cbd5e1;
-  --text:#f8fafc;
-  --brand-gradient: linear-gradient(90deg,#ff6a88,#fbd786,#f7797d);
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --bg:#121212; /* darker page background similar to Cinemark */
+  --panel:#0f0f0f;
+  --muted:#9ca3af;
+  --accent:#e11d48; /* red CTA */
+  --accent-2:#ff4d4d;
+  --text:#f3f4f6;
+  --max-width:1100px;
+  font-family: 'Oswald', Impact, 'Arial Black', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 }
-
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{
   background:var(--bg);
   color:var(--text);
-  display:flex;
-  min-height:100vh;
-  flex-direction:column;
-  align-items:center;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
-/* --- Loader splash (new) --- */
+/* --- Loader (fade in/out) --- */
 #loader-overlay{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:var(--bg); /* solid dark gray like the example */
-  transition:opacity .45s ease, visibility .45s ease;
+  position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease;
 }
 #loader-overlay.loaded{opacity:0;visibility:hidden;pointer-events:none}
+.loader-inner{flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}
+.loader-logo{width:clamp(96px,22vw,220px);height:auto;object-fit:contain;filter:drop-shadow(0 8px 28px rgba(0,0,0,0.6))}
+.loader-caption{position:absolute;bottom:6vh;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.75);font-size:14px;font-weight:600}
+@media(max-width:480px){.loader-logo{width:clamp(72px,30vw,140px)}.loader-caption{font-size:13px}}
 
-/* inner area that is vertically centered exactly in the middle */
-.loader-inner{
-  flex:1 1 auto;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-}
+/* --- Header similar layout --- */
+.site-header{border-bottom:1px solid rgba(255,255,255,0.03);background:transparent;padding:12px 16px}
+.header-inner{max-width:var(--max-width);margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:20px;letter-spacing:3px;font-weight:700}
+.hamburger{background:transparent;border:none;color:var(--text);font-size:20px}
+.header-actions .user{background:transparent;border:none;color:var(--text);font-size:18px}
+.selectors{max-width:var(--max-width);margin:8px auto 0;display:flex;gap:16px;padding:8px 16px}
+.select-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text);padding:10px 14px;border-radius:6px;font-weight:700}
 
-.loader-logo{
-  width: clamp(120px, 26vw, 240px); /* center-size tuned for mobile look similar to example */
-  height:auto;
-  display:block;
-  object-fit:contain;
-  filter: drop-shadow(0 10px 28px rgba(0,0,0,0.6));
-}
+/* --- Hero banner --- */
+.hero{background-image:url('https://picsum.photos/id/1016/1200/600');background-size:cover;background-position:center;height:320px;display:flex;align-items:flex-end}
+.hero-content{max-width:var(--max-width);margin:0 auto;padding:28px;color:var(--text);}
+.hero-title{font-size:28px;line-height:1.02;margin:0 0 8px;font-weight:800;text-transform:uppercase}
+.hero-sub{margin:0 0 12px;color:var(--muted);font-weight:700}
+.cta{background:var(--accent);color:white;border:none;padding:12px 18px;border-radius:8px;font-weight:800;cursor:pointer}
 
-/* caption fixed near the bottom */
-.loader-caption{
-  position:absolute;
-  bottom:6vh;
-  left:50%;
-  transform:translateX(-50%);
-  color:rgba(255,255,255,0.75);
-  font-size:16px;
-  font-weight:600;
-  letter-spacing:0.2px;
-  text-align:center;
-}
+/* --- Main layout --- */
+main{max-width:var(--max-width);margin:26px auto;padding:0 16px;display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start}
 
-@media(max-width:480px){
-  .loader-logo{width: clamp(96px, 34vw, 160px)}
-  .loader-caption{font-size:14px}
-}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-header h2{font-size:28px;margin:0;letter-spacing:1px}
+.badge{background:var(--accent);color:white;padding:8px 12px;border-radius:999px;font-weight:700}
 
-/* keep the rest of the page styles intact (condensed for brevity) */
-header{width:100%;background:linear-gradient(90deg,#000 0%, #07141f 100%);color:var(--text);padding:22px 18px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.6);border-bottom:1px solid rgba(255,213,79,0.06)}
-header h1{margin:0;font-size:1.6rem}
-main{width:100%;max-width:1100px;display:flex;gap:24px;padding:28px 16px;align-items:flex-start}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:14px}
-.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;box-shadow:0 8px 20px rgba(2,6,23,.45);display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,255,255,0.03);transition:transform .18s ease, box-shadow .18s ease}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:8px;padding:12px;box-shadow:0 8px 20px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03)}
+.card img{width:100%;height:140px;object-fit:cover;border-radius:6px}
+.card h3{margin:10px 0 6px;font-size:18px}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.card .actions{margin-top:10px;display:flex;justify-content:space-between}
 
-@media (prefers-reduced-motion: reduce){
-  .reel-img, .loader-logo{animation:none}
+/* --- Reservation panel --- */
+#reservation-panel{background:var(--panel);padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+#reservation-panel h2{margin:0 0 12px}
+#selected-movie{font-weight:700;margin-bottom:12px;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.controls button{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);cursor:pointer}
+.controls button.active{background:var(--accent-2);color:#061018}
+#quantity{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)}
+#confirm-btn{width:100%;margin-top:12px;padding:12px;border-radius:8px;font-weight:800;background:var(--accent);color:white;border:none;cursor:pointer}
+#confirm-btn:disabled{opacity:0.5;cursor:not-allowed}
+.hidden{display:none}
+
+footer{max-width:var(--max-width);margin:40px auto;padding:18px 16px;color:var(--muted);text-align:center}
+
+/* responsive */
+@media(max-width:1000px){main{grid-template-columns:1fr}
+  .hero{height:260px}
 }

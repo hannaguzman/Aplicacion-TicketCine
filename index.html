@@ -7,39 +7,59 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-  <!-- Loader splash: logo centered exactly middle, caption at bottom -->
+  <!-- Loader splash: centered logo with fade in/out -->
   <div id="loader-overlay" role="status" aria-label="Cargando sitio">
     <div class="loader-inner">
       <img class="loader-logo" src="173 sin título_20260824012952.png" alt="Logo" aria-hidden="true">
     </div>
-    <div class="loader-caption">
-      From Hanna Guzmán
-    </div>
+    <div class="loader-caption">From Hanna Guzmán</div>
   </div>
 
-  <header>
-    <h1>TicketCine</h1>
-    <p>Reserva tus entradas de forma rápida y sencilla</p>
+  <!-- Header (Cinemark-like centered brand) -->
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="hamburger" aria-label="Abrir menú">☰</button>
+      <div class="brand">TICKETCINE</div>
+      <div class="header-actions">
+        <button class="user">👤</button>
+      </div>
+    </div>
+    <div class="selectors">
+      <div class="select">
+        <button class="select-btn">ELEGÍ CINE ▾</button>
+      </div>
+      <div class="select">
+        <button class="select-btn">ELEGÍ PELÍCULA ▾</button>
+      </div>
+    </div>
   </header>
 
+  <!-- Hero banner (large) -->
+  <section class="hero" aria-label="Cartelera">
+    <div class="hero-content">
+      <h1 class="hero-title">LA CALLE DESAPARECIÓ. LOS VECINOS NUEVOS MUERDEN.</h1>
+      <p class="hero-sub">ESTRENO 13 DE AGOSTO</p>
+      <button class="cta">COMPRAR ENTRADAS</button>
+    </div>
+  </section>
+
   <main>
-    <section id="movies-section">
-      <h2>Películas disponibles</h2>
+    <section class="list-section">
+      <div class="section-header">
+        <h2>PELÍCULAS EN CARTELERA</h2>
+        <span class="badge">DESTACADO</span>
+      </div>
+
       <div id="movies-container" class="cards"></div>
     </section>
 
     <aside id="reservation-panel">
       <h2>Reserva</h2>
       <div id="selected-movie">Selecciona una película</div>
-
       <div id="showtimes" class="controls"></div>
-
       <label for="quantity">Cantidad de entradas</label>
       <input type="number" id="quantity" min="1" value="1">
-
       <button id="confirm-btn" disabled>Confirmar reserva</button>
-
       <div id="success-message" class="hidden">
         <h3>Reserva confirmada</h3>
         <p id="confirmation-text"></p>

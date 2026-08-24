@@ -1,23 +1,33 @@
-/* script.js - Lógica para TicketCine (loader handling updated to new splash) */
+/* script.js - Lógica para TicketCine (loader handling updated: minimum display time + longer fallback) */
 document.addEventListener('DOMContentLoaded', ()=> {
   // --- Loader handling (splash with logo) ---
   const loader = document.getElementById('loader-overlay');
+  const minDisplay = 2500; // minimum ms the loader stays visible (2.5s)
+  const maxFallback = 5000; // maximum ms to wait before hiding loader (5s)
+  const startTime = performance.now();
+  let loaderHidden = false;
+
+  function hideLoaderImmediate(){
+    if(!loader || loaderHidden) return;
+    loaderHidden = true;
+    loader.classList.add('loaded');
+    // clear display after CSS transition
+    setTimeout(()=>{ if(loader) loader.style.display = 'none'; }, 600);
+    if(fallbackTimer) clearTimeout(fallbackTimer);
+  }
 
   function hideLoader(){
     if(!loader) return;
-    loader.classList.add('loaded');
-    setTimeout(()=>{
-      loader.style.display = 'none';
-    }, 600);
+    const elapsed = performance.now() - startTime;
+    const wait = Math.max(0, minDisplay - elapsed);
+    setTimeout(hideLoaderImmediate, wait);
   }
 
-  // Hide loader on full load, fallback to 3s
-  window.addEventListener('load', ()=>{
-    hideLoader();
-  });
-  setTimeout(()=>{
-    if(loader && getComputedStyle(loader).display !== 'none') hideLoader();
-  }, 3000);
+  // Hide loader on full window load, but enforce min display time
+  window.addEventListener('load', hideLoader);
+
+  // Fallback: if load takes too long, hide after maxFallback
+  const fallbackTimer = setTimeout(()=>{ if(loader && !loaderHidden) hideLoaderImmediate(); }, maxFallback);
   // --- End loader handling ---
 
   // Datos de ejemplo: título, sinopsis corta, imagen (placeholder), horarios
@@ -124,7 +134,7 @@ document.addEventListener('DOMContentLoaded', ()=> {
   confirmBtn.addEventListener('click', ()=> {
     const qty = Number(quantityEl.value) || 1;
     if(!selectedMovie || !selectedTime || qty < 1) return;
-    confirmationText.textContent = `Has reservado ${qty} entrada(s) para \"${selectedMovie.title}\" a las ${selectedTime}. ¡Disfruta la función!`;
+    confirmationText.textContent = `Has reservado ${qty} entrada(s) para "${selectedMovie.title}" a las ${selectedTime}. ¡Disfruta la función!`;
     successMessage.classList.remove('hidden');
     confirmBtn.disabled = true;
   });

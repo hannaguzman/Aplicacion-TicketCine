@@ -1,33 +1,15 @@
-/* script.js - Reservation logic; loader timing reduced to be less obtrusive (min 800ms, fallback 2000ms) */
+/* script.js - Reservation logic; loader hides immediately on load to avoid blocking UI */
 document.addEventListener('DOMContentLoaded', ()=> {
-  // --- Loader handling (splash with logo) ---
+  // --- Loader handling (immediate hide on load) ---
   const loader = document.getElementById('loader-overlay');
-  const minDisplay = 800; // minimum ms the loader stays visible (800ms)
-  const maxFallback = 2000; // maximum ms to wait before hiding loader (2000ms)
-  const startTime = performance.now();
-  let loaderHidden = false;
-
-  function hideLoaderImmediate(){
-    if(!loader || loaderHidden) return;
-    loaderHidden = true;
-    loader.classList.add('loaded');
-    // clear display after CSS transition
-    setTimeout(()=>{ if(loader) loader.style.display = 'none'; }, 600);
-    if(fallbackTimer) clearTimeout(fallbackTimer);
+  if(loader){
+    // Hide immediately when window finishes loading
+    window.addEventListener('load', ()=>{
+      try{ loader.style.display = 'none'; }catch(e){}
+    });
+    // Fallback: in case load doesn't fire timely, hide after 800ms
+    setTimeout(()=>{ try{ if(loader && loader.style.display !== 'none') loader.style.display = 'none'; }catch(e){} }, 800);
   }
-
-  function hideLoader(){
-    if(!loader) return;
-    const elapsed = performance.now() - startTime;
-    const wait = Math.max(0, minDisplay - elapsed);
-    setTimeout(hideLoaderImmediate, wait);
-  }
-
-  // Hide loader on full window load, but enforce min display time
-  window.addEventListener('load', hideLoader);
-
-  // Fallback: if load takes too long, hide after maxFallback
-  const fallbackTimer = setTimeout(()=>{ if(loader && !loaderHidden) hideLoaderImmediate(); }, maxFallback);
   // --- End loader handling ---
 
   // Reservation app logic

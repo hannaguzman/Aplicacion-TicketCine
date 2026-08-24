@@ -1,4 +1,4 @@
-/* styles.css - Main site styled to resemble Cinemark dark layout + loader fade */
+/* styles.css - Updated: loader hides immediately (no fade) to avoid blocking UI */
 :root{
   --bg:#121212; /* darker page background similar to Cinemark */
   --panel:#0f0f0f;
@@ -18,9 +18,9 @@ body{
   -moz-osx-font-smoothing:grayscale;
 }
 
-/* --- Loader (fade in/out) --- */
+/* --- Loader (immediate hide, no fade) --- */
 #loader-overlay{
-  position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease;
+  position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);opacity:1;visibility:visible;transition:none;
 }
 #loader-overlay.loaded{opacity:0;visibility:hidden;pointer-events:none}
 .loader-inner{flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}

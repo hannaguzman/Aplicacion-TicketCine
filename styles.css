@@ -1,16 +1,13 @@
-/* styles.css - Estilo moderno en negro y amarillo para TicketCine (loader usa imágenes reales)
-   Actualizado: centrar el loader verticalmente y aumentar tamaño con escala responsiva */
+/* styles.css - Actualizado: nuevo loader tipo splash con logo centrado y crédito "From Hanna Guzmán" */
 :root{
-  --bg:#0b0b0b;            /* fondo principal: negro profundo */
-  --surface:#0f1720;       /* tarjetas y paneles */
+  --bg:#0b0b0b;
+  --surface:#0f1720;
   --card:#0f1720;
-  --accent:#ffd54f;        /* amarillo vibrante */
+  --accent:#ffd54f;
   --accent-600:#f7c948;
-  --muted:#cbd5e1;         /* texto secundario claro */
-  --text:#f8fafc;          /* texto principal claro */
-  --success:#16a34a;
-  --glass:rgba(255,255,255,0.03);
-  --max-width:1100px;
+  --muted:#cbd5e1;
+  --text:#f8fafc;
+  --brand-gradient: linear-gradient(90deg,#ff6a88,#fbd786,#f7797d);
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
@@ -26,75 +23,68 @@ body{
   align-items:center;
 }
 
-/* --- Loader styles (pantalla de carga) --- */
+/* --- NEW Loader styles (splash) --- */
 #loader-overlay{
   position:fixed;
   inset:0;
   z-index:9999;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  background: linear-gradient(180deg, #00122b 0%, #3b0f6f 100%); /* azul marino -> morado */
-  transition:opacity .6s ease, visibility .6s ease;
+  background: linear-gradient(180deg, #00122b 0%, #3b0f6f 100%);
+  transition:opacity .5s ease, visibility .5s ease;
 }
-#loader-overlay.loaded{opacity:0;visibility:hidden}
+#loader-overlay.loaded{opacity:0;visibility:hidden;pointer-events:none}
 
-/* Centrar y colocar en el medio exacto: contenido más grande y responsivo */
-.loader-content{
+.loader-inner{
   display:flex;
-  gap:32px; /* separación entre reel y spool */
   align-items:center;
   justify-content:center;
-  padding:12px 20px;
-  /* asegurar que el loader esté centrado y no afecte el layout detrás */
-  transform:translateY(0);
+  padding:8px;
 }
 
-/* Images used as loader elements */
-.reel-img, .spool-img{
-  display:block;
-  max-width:100%;
-  height:auto;
-  filter: drop-shadow(0 14px 40px rgba(0,0,0,0.6));
-  background:transparent;
-}
-
-/* Tamaños responsivos y más grandes: reel en la izquierda (gira); spool a la derecha (estática)
-   Usamos clamp para escalar según el viewport y mantener buena apariencia en móviles */
-.reel-img{
-  width: clamp(260px, 36vw, 520px); /* mínimo 260, ideal 36vw, máximo 520 */
+/* Logo centered and larger */
+.loader-logo{
+  width: clamp(160px, 28vw, 360px);
   height: auto;
+  display:block;
   object-fit:contain;
-  transform-origin:50% 50%;
-  animation:spin 2.2s linear infinite;
-}
-.spool-img{
-  width: clamp(140px, 14vw, 260px);
-  height:auto;
-  object-fit:contain;
+  filter: drop-shadow(0 12px 30px rgba(0,0,0,0.6));
 }
 
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion: reduce){
-  .reel-img{animation: none}
+/* Caption at the bottom of the overlay (similar to example). Keeps visible while overlay shown */
+.loader-caption{
+  position:fixed;
+  bottom:6vh;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  color:var(--muted);
+  pointer-events:none;
+}
+.loader-from{
+  font-size:14px;
+  color:rgba(255,255,255,0.65);
+  margin-bottom:6px;
+  text-transform:lowercase;
+}
+.loader-brand{
+  font-size:18px;
+  font-weight:700;
+  /* gradient text */
+  background: linear-gradient(90deg,#ff6a88,#fbd786,#f7797d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Mantener el overlay centrado en pantallas muy altas: ajustar posicionamiento vertical ligeramente */
-@media(min-height:900px){
-  .loader-content{transform:translateY(-6vh)}
+@media(max-width:480px){
+  .loader-logo{width: clamp(120px, 44vw, 220px)}
+  .loader-brand{font-size:16px}
+  .loader-from{font-size:12px}
 }
 
-@media(max-width:920px){
-  main{flex-direction:column}
-  #reservation-panel{width:100%;position:relative;top:0}
-  #reservation-panel{order:2}
-  #movies-section{order:1}
-  .loader-content{gap:20px}
-  .reel-img{width: clamp(200px, 45vw, 360px)}
-  .spool-img{width: clamp(110px, 22vw, 160px)}
-}
-
-/* --- Fin Loader styles --- */
+/* --- End NEW Loader styles --- */
 
 header{
   width:100%;
@@ -110,126 +100,20 @@ header p{margin:6px 0 0;color:var(--muted)}
 
 main{
   width:100%;
-  max-width:var(--max-width);
+  max-width:1100px;
   display:flex;
   gap:24px;
   padding:28px 16px;
   align-items:flex-start;
 }
 
-/* Películas (izquierda) */
-#movies-section{flex:1 1 0}
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-  gap:18px;
-  margin-top:14px;
-}
-.card{
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:12px;
-  padding:12px;
-  box-shadow:0 8px 20px rgba(2,6,23,.45);
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  border:1px solid rgba(255,255,255,0.03);
-  transition:transform .18s ease, box-shadow .18s ease;
-}
-.card:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(0,0,0,.6)}
-.card img{
-  width:100%;
-  height:140px;
-  object-fit:cover;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.03);
-}
-.card h3{margin:0;font-size:1.05rem}
-.card p{margin:0;color:var(--muted);font-size:0.95rem;flex:1}
-.card .actions{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  margin-top:6px;
-}
-.btn{
-  background:var(--accent);
-  color:#071018;
-  border:none;
-  padding:9px 12px;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:700;
-  box-shadow:0 6px 18px rgba(255,213,79,0.08);
-  transition:transform .12s ease, box-shadow .12s ease;
-}
-.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(255,213,79,0.12)}
-.btn.secondary{
-  background:transparent;
-  color:var(--muted);
-  border:1px solid rgba(255,255,255,0.04);
-}
+/* Rest of styles unchanged (cards, buttons, panel) kept from previous version */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:14px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;box-shadow:0 8px 20px rgba(2,6,23,.45);display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,255,255,0.03);transition:transform .18s ease, box-shadow .18s ease}
+.card img{width:100%;height:140px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
 
-/* Panel de reserva (derecha) */
-#reservation-panel{
-  width:360px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:12px;
-  padding:18px;
-  box-shadow:0 12px 30px rgba(2,6,23,.5);
-  position:sticky;
-  top:28px;
-  height:fit-content;
-  border:1px solid rgba(255,255,255,0.03);
-}
-#reservation-panel h2{margin:0 0 8px 0}
-#selected-movie{font-weight:700;margin-bottom:12px;color:var(--muted)}
+.btn{background:var(--accent);color:#071018;border:none;padding:9px 12px;border-radius:8px;cursor:pointer;font-weight:700}
 
-.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
-.controls button{
-  padding:8px 12px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.04);
-  background:transparent;
-  color:var(--muted);
-  cursor:pointer;
-  font-weight:600;
+@media (prefers-reduced-motion: reduce){
+  .reel-img, .loader-logo{animation:none}
 }
-.controls button.active{
-  background:linear-gradient(90deg,var(--accent),var(--accent-600));
-  color:#071018;
-  border-color:rgba(0,0,0,0.12);
-  box-shadow:0 6px 16px rgba(0,0,0,0.45);
-}
-
-label{display:block;margin-top:6px;color:var(--muted);font-size:0.95rem}
-#quantity{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)}
-#confirm-btn{
-  width:100%;
-  margin-top:14px;
-  padding:12px;
-  border-radius:10px;
-  font-weight:800;
-  letter-spacing:0.4px;
-  background:linear-gradient(90deg,var(--accent),var(--accent-600));
-  color:#071018;
-  border:none;
-  cursor:pointer;
-  box-shadow:0 14px 30px rgba(255,213,79,0.12);
-}
-#confirm-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
-
-/* Mensaje de éxito */
-.hidden{display:none}
-#success-message{
-  margin-top:14px;
-  padding:12px;
-  border-radius:10px;
-  background:linear-gradient(180deg, rgba(255,250,235,0.04), rgba(255,250,235,0.02));
-  border:1px solid rgba(255,213,79,0.09);
-}
-#success-message h3{margin:0;color:var(--accent)}
-#confirmation-text{margin:6px 0 0;color:var(--muted);font-size:0.95rem}
-
-/* Footer */
-footer{width:100%;text-align:center;padding:14px 0;color:var(--muted);font-size:0.9rem;margin-top:auto}

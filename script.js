@@ -1,26 +1,23 @@
-/* script.js - Lógica para TicketCine (ES) */
+/* script.js - Lógica para TicketCine (loader handling updated to new splash) */
 document.addEventListener('DOMContentLoaded', ()=> {
-  // --- Loader handling ---
+  // --- Loader handling (splash with logo) ---
   const loader = document.getElementById('loader-overlay');
 
-  // Hide loader when window finishes loading, or after a fallback timeout
   function hideLoader(){
     if(!loader) return;
     loader.classList.add('loaded');
-    // allow CSS transition to finish before removing from flow
     setTimeout(()=>{
       loader.style.display = 'none';
-    }, 700);
+    }, 600);
   }
 
+  // Hide loader on full load, fallback to 3s
   window.addEventListener('load', ()=>{
     hideLoader();
   });
-
-  // Fallback: if load takes too long, hide after 4s
   setTimeout(()=>{
     if(loader && getComputedStyle(loader).display !== 'none') hideLoader();
-  }, 4000);
+  }, 3000);
   // --- End loader handling ---
 
   // Datos de ejemplo: título, sinopsis corta, imagen (placeholder), horarios
@@ -102,7 +99,6 @@ document.addEventListener('DOMContentLoaded', ()=> {
       const btn = document.createElement('button');
       btn.textContent = t;
       btn.addEventListener('click', ()=> {
-        // quitar active de hermanos
         Array.from(showtimesEl.children).forEach(c=>c.classList.remove('active'));
         btn.classList.add('active');
         selectedTime = t;
@@ -128,15 +124,8 @@ document.addEventListener('DOMContentLoaded', ()=> {
   confirmBtn.addEventListener('click', ()=> {
     const qty = Number(quantityEl.value) || 1;
     if(!selectedMovie || !selectedTime || qty < 1) return;
-    // Mostrar mensaje de éxito
-    confirmationText.textContent = `Has reservado ${qty} entrada(s) para "${selectedMovie.title}" a las ${selectedTime}. ¡Disfruta la función!`;
+    confirmationText.textContent = `Has reservado ${qty} entrada(s) para \"${selectedMovie.title}\" a las ${selectedTime}. ¡Disfruta la función!`;
     successMessage.classList.remove('hidden');
-
-    // Opcional: limpiar selección y deshabilitar botón
-    // selectedMovie = null;
-    // selectedTime = null;
-    // selectedMovieEl.textContent = 'Selecciona una película';
-    // showtimesEl.innerHTML = '';
     confirmBtn.disabled = true;
   });
 

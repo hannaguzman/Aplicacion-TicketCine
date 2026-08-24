@@ -1,12 +1,34 @@
-/* script.js - Reservation logic kept; loader min/max times already implemented earlier */
+/* script.js - Reservation logic; loader timing reduced to be less obtrusive (min 800ms, fallback 2000ms) */
 document.addEventListener('DOMContentLoaded', ()=> {
-  // Loader is handled earlier (min display and fallback)
+  // --- Loader handling (splash with logo) ---
   const loader = document.getElementById('loader-overlay');
-  // Ensure fade-in initially (small delay allows CSS transition)
-  if(loader){
-    loader.style.opacity = '1';
-    loader.style.visibility = 'visible';
+  const minDisplay = 800; // minimum ms the loader stays visible (800ms)
+  const maxFallback = 2000; // maximum ms to wait before hiding loader (2000ms)
+  const startTime = performance.now();
+  let loaderHidden = false;
+
+  function hideLoaderImmediate(){
+    if(!loader || loaderHidden) return;
+    loaderHidden = true;
+    loader.classList.add('loaded');
+    // clear display after CSS transition
+    setTimeout(()=>{ if(loader) loader.style.display = 'none'; }, 600);
+    if(fallbackTimer) clearTimeout(fallbackTimer);
   }
+
+  function hideLoader(){
+    if(!loader) return;
+    const elapsed = performance.now() - startTime;
+    const wait = Math.max(0, minDisplay - elapsed);
+    setTimeout(hideLoaderImmediate, wait);
+  }
+
+  // Hide loader on full window load, but enforce min display time
+  window.addEventListener('load', hideLoader);
+
+  // Fallback: if load takes too long, hide after maxFallback
+  const fallbackTimer = setTimeout(()=>{ if(loader && !loaderHidden) hideLoaderImmediate(); }, maxFallback);
+  // --- End loader handling ---
 
   // Reservation app logic
   const movies = [
@@ -41,7 +63,7 @@ document.addEventListener('DOMContentLoaded', ()=> {
   function renderShowtimes(){ showtimesEl.innerHTML=''; if(!selectedMovie) return; selectedMovie.times.forEach(t=>{ const btn=document.createElement('button'); btn.textContent=t; btn.addEventListener('click', ()=>{ Array.from(showtimesEl.children).forEach(c=>c.classList.remove('active')); btn.classList.add('active'); selectedTime=t; updateConfirmButton(); successMessage.classList.add('hidden'); }); showtimesEl.appendChild(btn); }); }
   quantityEl.addEventListener('input', ()=>{ if(!quantityEl.value || Number(quantityEl.value)<1) quantityEl.value=1; updateConfirmButton(); });
   function updateConfirmButton(){ const qty = Number(quantityEl.value)||0; confirmBtn.disabled = !(selectedMovie && selectedTime && qty>=1); }
-  confirmBtn.addEventListener('click', ()=>{ const qty = Number(quantityEl.value)||1; if(!selectedMovie||!selectedTime||qty<1) return; confirmationText.textContent = `Has reservado ${qty} entrada(s) para "${selectedMovie.title}" a las ${selectedTime}. ¡Disfruta la función!`; successMessage.classList.remove('hidden'); confirmBtn.disabled=true; });
+  confirmBtn.addEventListener('click', ()=>{ const qty = Number(quantityEl.value)||1; if(!selectedMovie||!selectedTime||qty<1) return; confirmationText.textContent = `Has reservado ${qty} entrada(s) para \"${selectedMovie.title}\" a las ${selectedTime}. ¡Disfruta la función!`; successMessage.classList.remove('hidden'); confirmBtn.disabled=true; });
 
   renderMovies();
 

@@ -3,75 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TicketCine - Reserva de entradas</title>
+  <title>TicketCine - Cartelera</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Loader splash: centered logo with immediate hide handled in JS -->
-  <div id="loader-overlay" role="status" aria-label="Cargando sitio">
-    <div class="loader-inner">
-      <img class="loader-logo" src="173 sin título_20260824012952.png" alt="Logo" aria-hidden="true">
-    </div>
-    <div class="loader-caption">From Hanna Guzmán</div>
-  </div>
-
-  <!-- Header (Cinemark-like centered brand) -->
-  <header class="site-header">
+  <!-- Header fijo arriba -->
+  <header class="site-header fixed">
     <div class="header-inner">
       <button class="hamburger" aria-label="Abrir menú">☰</button>
       <div class="brand">TICKETCINE</div>
       <div class="header-actions">
-        <button class="user">👤</button>
-      </div>
-    </div>
-    <div class="selectors">
-      <div class="select">
-        <button class="select-btn">ELEGÍ CINE ▾</button>
-      </div>
-      <div class="select">
-        <button class="select-btn">ELEGÍ PELÍCULA ▾</button>
+        <button class="user" aria-label="Cuenta">👤</button>
       </div>
     </div>
   </header>
 
-  <!-- Carousel slider (one image at a time) -->
-  <section id="carousel" class="carousel" aria-label="Carrusel de películas">
-    <div class="carousel-wrapper">
-      <div class="carousel-track" id="carousel-track" aria-live="polite">
-        <!-- slides injected by JS -->
+  <!-- Barra de filtros justo debajo del header -->
+  <div class="filters-bar">
+    <div class="filters-inner">
+      <div class="filter-left">
+        <button class="filter-btn">📍 Elegí cine ▾</button>
       </div>
-      <button class="carousel-btn prev" id="carousel-prev" aria-label="Anterior">‹</button>
-      <button class="carousel-btn next" id="carousel-next" aria-label="Siguiente">›</button>
+      <div class="filter-right">
+        <button class="filter-btn">🎬 Elegí película ▾</button>
+      </div>
     </div>
-    <div class="carousel-indicators" id="carousel-indicators" aria-hidden="true"></div>
-  </section>
+    <div class="filters-separator" aria-hidden="true"></div>
+  </div>
 
-  <!-- Main content (listing + reservation) -->
-  <main>
-    <section class="list-section">
-      <div class="section-header">
-        <h2>PELÍCULAS EN CARTELERA</h2>
-        <span class="badge">DESTACADO</span>
+  <main class="content">
+    <!-- Sección Cartelera -->
+    <section id="cartelera" class="cartelera">
+      <div class="cartelera-header">
+        <h2 class="section-title">PELÍCULAS EN CARTELERA</h2>
+        <div class="highlight-badge"><span class="smile">😊</span> DESTACADO</div>
       </div>
 
-      <div id="movies-container" class="cards"></div>
+      <!-- Sub-filtros (formatos, idioma, otras opciones) -->
+      <div class="subfilters">
+        <button class="subfilter">Formatos ▾</button>
+        <button class="subfilter">Idioma ▾</button>
+        <button class="subfilter">Otras opciones ▾</button>
+      </div>
+
+      <!-- Grid de películas 2 columnas -->
+      <div id="movies-grid" class="movies-grid" aria-live="polite">
+        <!-- tarjetas generadas por script.js -->
+      </div>
     </section>
-
-    <aside id="reservation-panel">
-      <h2>Reserva</h2>
-      <div id="selected-movie">Selecciona una película</div>
-      <div id="showtimes" class="controls"></div>
-      <label for="quantity">Cantidad de entradas</label>
-      <input type="number" id="quantity" min="1" value="1">
-      <button id="confirm-btn" disabled>Confirmar reserva</button>
-      <div id="success-message" class="hidden">
-        <h3>Reserva confirmada</h3>
-        <p id="confirmation-text"></p>
-      </div>
-    </aside>
   </main>
 
-  <footer>
+  <!-- Botón flotante compra rápida -->
+  <button id="quick-buy" class="quick-buy">⚡ COMPRA RÁPIDA ▾</button>
+
+  <footer class="site-footer">
     <p>&copy; TicketCine</p>
   </footer>
 

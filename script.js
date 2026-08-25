@@ -1,68 +1,58 @@
-// script.js - Renderizado de Cartelera (HTML/CSS/JS puro)
+// script.js - Simple carousel (one slide at a time) using provided TMDb images
 document.addEventListener('DOMContentLoaded', ()=>{
-  const movies = [
-    { title: 'Tu corazón se romperá', img: 'https://image.tmdb.org/t/p/w500/siSnG1h8JKkuHgM0RuOWLcNxSbz.jpg', duration:'2h 10min', rating:'SP', formats:'3D · D-BOX', premiere:false },
-    { title: 'Insidious: Fuera del más allá', img: 'https://image.tmdb.org/t/p/w500/peE3VhpRbIW9VtW2SRaf893JMzJ.jpg', duration:'1h 44min', rating:'R-17', formats:'2D · 4D', premiere:false },
-    { title: 'Engendro', img: 'https://image.tmdb.org/t/p/w500/cVQFWGIt5PNw3p7AcQOq2Eg39G.jpg', duration:'1h 52min', rating:'SP', formats:'2D', premiere:false },
-    { title: 'La invitación', img: 'https://image.tmdb.org/t/p/w500/21JnfyCARiRkms9AZHtTXiZKbIj.jpg', duration:'2h 02min', rating:'13', formats:'2D · VO', premiere:true },
-    { title: 'Adolescencia, sexo y muerte en campamento Miasma', img: 'https://image.tmdb.org/t/p/w500/8UTCpwvHxWPllCJ7YnaCbffmYyD.jpg', duration:'1h 38min', rating:'SP', formats:'2D', premiere:false },
-    { title: 'Insaciable', img: 'https://image.tmdb.org/t/p/w500/v9st6lwP4K2i6YCa7kLQVQEuvNZ.jpg', duration:'1h 55min', rating:'G', formats:'3D', premiere:false },
-    { title: 'Tiempo de victoria', img: 'https://image.tmdb.org/t/p/w500/byKFPj2xvKkqMKQ4i0Ayq6N7Z9E.jpg', duration:'2h 20min', rating:'SP', formats:'2D · VO', premiere:false },
-    { title: 'El árbol muy muy lejano', img: 'https://image.tmdb.org/t/p/w500/udXvLxC5gAqN8SinemyFBEcHpTf.jpg', duration:'1h 50min', rating:'13', formats:'2D', premiere:false },
-    { title: 'Tóxico: Un cuento de hadas para adultos', img: 'https://image.tmdb.org/t/p/w500/bhpSB2g6yCKyxRgvgZ27KUgBHg6.jpg', duration:'1h 47min', rating:'R-17', formats:'2D', premiere:false },
-    { title: 'Nimrods: A Green Day Comedy', img: 'https://image.tmdb.org/t/p/w500/aebmSpFu1lUV78PtOpqMUn4d82B.jpg', duration:'1h 28min', rating:'G', formats:'2D', premiere:false },
-    { title: 'Esa cosa con alas', img: 'https://image.tmdb.org/t/p/w500/aaoS7XEWnKeQCa3EqWAXC803hlg.jpg', duration:'1h 40min', rating:'SP', formats:'2D', premiere:false },
-    { title: 'Yo, narciso', img: 'https://image.tmdb.org/t/p/w500/3qe9gaT7jpKVJJ6UtM9Pr5jm3Hq.jpg', duration:'2h 05min', rating:'13', formats:'2D', premiere:false },
-    { title: 'Canelones', img: 'https://image.tmdb.org/t/p/w500/s2g8wLNs6G5XYa5ivfUNuWbQTKQ.jpg', duration:'1h 30min', rating:'SP', formats:'2D', premiere:true }
+  const slides = [
+    { title: 'Spider-Man: Brand New Day', img: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg', link: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg' },
+    { title: 'La Odisea', img: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg', link: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg' },
+    { title: 'La muerte de Robin Hood', img: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg', link: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg' },
+    { title: 'Backrooms', img: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg', link: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg' },
+    { title: 'El final de Oak Street', img: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg', link: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg' }
   ];
 
-  const grid = document.getElementById('movies-grid');
+  const track = document.getElementById('carousel-track');
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
+  const indicators = document.getElementById('carousel-indicators');
+  let currentIndex = 0;
 
-  function render(){
-    grid.innerHTML = '';
-    movies.forEach(m => {
-      const card = document.createElement('article');
-      card.className = 'movie-card';
+  function build(){
+    slides.forEach((s, i)=>{
+      const slide = document.createElement('div');
+      slide.className = 'carousel-slide';
 
-      const posterWrap = document.createElement('div'); posterWrap.className = 'poster-wrapper';
-      const img = document.createElement('img'); img.className = 'movie-poster'; img.src = m.img; img.alt = m.title;
-      posterWrap.appendChild(img);
+      const a = document.createElement('a');
+      a.href = s.link; a.target = '_blank'; a.rel = 'noopener noreferrer';
 
-      const duration = document.createElement('div'); duration.className = 'duration-badge'; duration.textContent = m.duration;
-      posterWrap.appendChild(duration);
+      const img = document.createElement('img');
+      img.className = 'carousel-img'; img.src = s.img; img.alt = s.title;
 
-      const smile = document.createElement('div'); smile.className = 'smile-badge'; smile.textContent = '😊';
-      posterWrap.appendChild(smile);
+      a.appendChild(img);
+      slide.appendChild(a);
 
-      card.appendChild(posterWrap);
+      const cap = document.createElement('div'); cap.className = 'carousel-caption'; cap.textContent = s.title;
+      slide.appendChild(cap);
 
-      const body = document.createElement('div'); body.className = 'movie-body';
-      const titleRow = document.createElement('div');
-      const title = document.createElement('h3'); title.className = 'movie-title'; title.textContent = m.title;
-      const rating = document.createElement('span'); rating.className = 'rating-badge'; rating.textContent = m.rating;
-      titleRow.appendChild(title); titleRow.appendChild(rating);
-      body.appendChild(titleRow);
+      track.appendChild(slide);
 
-      const formats = document.createElement('div'); formats.className = 'formats'; formats.textContent = m.formats;
-      body.appendChild(formats);
-
-      card.appendChild(body);
-
-      if(m.premiere){
-        const tag = document.createElement('div'); tag.className = 'premiere-tag'; tag.textContent = 'Estreno';
-        card.appendChild(tag);
-      }
-
-      grid.appendChild(card);
+      const ind = document.createElement('button');
+      ind.addEventListener('click', ()=> goTo(i));
+      if(i===0) ind.classList.add('active');
+      indicators.appendChild(ind);
     });
   }
 
-  render();
+  function update(){
+    track.style.transform = `translateX(${-currentIndex*100}%)`;
+    Array.from(indicators.children).forEach((b, idx)=> b.classList.toggle('active', idx===currentIndex));
+  }
 
-  // Quick-buy floating button behaviour (simple scroll to top demo)
-  const quick = document.getElementById('quick-buy');
-  quick.addEventListener('click', ()=>{
-    window.scrollTo({top:0,behavior:'smooth'});
-  });
+  function next(){ currentIndex = (currentIndex+1) % slides.length; update(); }
+  function prev(){ currentIndex = (currentIndex-1 + slides.length) % slides.length; update(); }
+  function goTo(i){ currentIndex = (i + slides.length) % slides.length; update(); }
 
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'ArrowRight') next(); if(e.key === 'ArrowLeft') prev(); });
+
+  build(); update();
 });

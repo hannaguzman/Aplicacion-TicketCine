@@ -1,18 +1,83 @@
-/* script.js - Reservation logic; loader hides immediately on load to avoid blocking UI */
+/* script.js - Reservation logic + carousel implementation; loader hides immediately */
 document.addEventListener('DOMContentLoaded', ()=> {
   // --- Loader handling (immediate hide on load) ---
   const loader = document.getElementById('loader-overlay');
   if(loader){
-    // Hide immediately when window finishes loading
     window.addEventListener('load', ()=>{
       try{ loader.style.display = 'none'; }catch(e){}
     });
-    // Fallback: in case load doesn't fire timely, hide after 800ms
     setTimeout(()=>{ try{ if(loader && loader.style.display !== 'none') loader.style.display = 'none'; }catch(e){} }, 800);
   }
   // --- End loader handling ---
 
-  // Reservation app logic
+  // --- Carousel data (exact images/titles provided) ---
+  const slides = [
+    { title: 'Spider-Man: Brand New Day', img: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg', link: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg' },
+    { title: 'La Odisea', img: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg', link: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg' },
+    { title: 'La muerte de Robin Hood', img: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg', link: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg' },
+    { title: 'Backrooms', img: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg', link: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg' },
+    { title: 'El final de Oak Street', img: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg', link: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg' }
+  ];
+
+  const track = document.getElementById('carousel-track');
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
+  const indicators = document.getElementById('carousel-indicators');
+  let currentIndex = 0;
+
+  // Build slides
+  function buildCarousel(){
+    slides.forEach((s, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'carousel-slide';
+      const a = document.createElement('a');
+      a.href = s.link;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      const img = document.createElement('img');
+      img.className = 'carousel-img';
+      img.src = s.img;
+      img.alt = s.title;
+      a.appendChild(img);
+      // caption
+      const cap = document.createElement('div'); cap.className = 'carousel-caption'; cap.textContent = s.title;
+      slide.appendChild(a);
+      slide.appendChild(cap);
+      track.appendChild(slide);
+
+      // indicator
+      const ind = document.createElement('button');
+      ind.addEventListener('click', ()=> goToSlide(i));
+      if(i===0) ind.classList.add('active');
+      indicators.appendChild(ind);
+    });
+  }
+
+  function updateTrack(){
+    const offset = -currentIndex * 100;
+    track.style.transform = `translateX(${offset}%)`;
+    // update indicators
+    Array.from(indicators.children).forEach((b, idx)=> b.classList.toggle('active', idx===currentIndex));
+  }
+
+  function next(){ currentIndex = (currentIndex + 1) % slides.length; updateTrack(); }
+  function prev(){ currentIndex = (currentIndex - 1 + slides.length) % slides.length; updateTrack(); }
+  function goToSlide(i){ currentIndex = i % slides.length; updateTrack(); }
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  buildCarousel();
+  updateTrack();
+
+  // Optional: keyboard navigation (left/right)
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowRight') next();
+    if(e.key === 'ArrowLeft') prev();
+  });
+  // --- End carousel ---
+
+  // --- Reservation app logic ---
   const movies = [
     { id:1, title:'La Aventura Espacial', desc:'Una odisea por el sistema solar llena de emoción y descubrimientos.', img:'https://picsum.photos/seed/space/400/240', times:['12:00','15:30','18:00','21:00'] },
     { id:2, title:'Amor en la Ciudad', desc:'Comedia romántica sobre segundas oportunidades.', img:'https://picsum.photos/seed/romance/400/240', times:['11:00','14:00','17:00','20:30'] },

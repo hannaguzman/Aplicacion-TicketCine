@@ -1,4 +1,4 @@
-/* styles.css - Minimal dark theme + carousel at top + loader splash */
+/* styles.css - Minimal dark theme + carousel + gallery styles */
 :root{
   --bg:#0b0b0b;
   --loader-bg:#171718; /* slightly lighter charcoal like example */
@@ -46,16 +46,21 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--white)}
 .carousel-indicators button{width:40px;height:6px;border-radius:6px;background:rgba(255,255,255,0.16);border:none;cursor:pointer}
 .carousel-indicators button.active{background:rgba(255,255,255,0.9)}
 
-/* Responsive adjustments */
-@media(max-width:900px){
-  .carousel-img{height:320px}
-}
-@media(max-width:480px){
-  .carousel-img{height:260px}
-  .carousel-btn{width:40px;height:40px;font-size:20px}
-  .carousel-caption{left:12px;right:12px}
-}
+/* Gallery styles (cards in two columns like Cinemark) */
+.gallery{max-width:var(--max-width);margin:22px auto;padding:0 16px 60px}
+.gallery-header h2{font-size:22px;margin:0 0 12px;font-weight:900}
+.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:10px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.03)}
+.poster-wrap{position:relative}
+.poster{width:100%;height:420px;object-fit:cover;display:block}
+.duration{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.6);color:#fff;padding:6px 8px;border-radius:6px;font-weight:800;font-size:13px}
+.smile{position:absolute;top:12px;left:12px;background:var(--accent);color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}
+.card-body{padding:12px}
+.card-title{font-size:16px;margin:0 0 6px;font-weight:900;text-transform:uppercase}
+.rating{display:inline-block;background:rgba(255,255,255,0.06);color:var(--white);padding:6px 8px;border-radius:6px;font-weight:700;margin-left:8px;font-size:12px}
+.formats{color:var(--muted);font-size:13px;margin-top:8px}
+.premiere{display:inline-block;margin:10px 12px 16px;background:#fff;color:#000;padding:6px 10px;border-radius:6px;font-weight:800}
 
-/* main content placeholder */
-.main-content{max-width:var(--max-width);margin:22px auto;padding:0 16px}
-.main-content h2{margin:0 0 8px}
+/* Quick-buy floating spacing placeholder */
+@media(max-width:900px){.poster{height:520px}}
+@media(max-width:480px){.poster{height:360px}.carousel-img{height:260px}}

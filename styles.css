@@ -30,9 +30,9 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--white)}
 .carousel-wrapper{max-width:var(--max-width);margin:12px auto 0;position:relative;overflow:hidden;border-radius:8px}
 .carousel-track{display:flex;transition:transform .55s ease;will-change:transform}
 .carousel-slide{flex:0 0 100%;position:relative;display:flex;align-items:stretch;gap:18px;padding:18px 24px}
-/* Left: image; Right: info */
-.carousel-left{flex:0 0 55%;display:flex;align-items:center;justify-content:center}
-.carousel-right{flex:1 1 45%;display:flex;flex-direction:column;justify-content:center}
+/* Left: image (~30%); Right: info (~70%) */
+.carousel-left{flex:0 0 30%;display:flex;align-items:center;justify-content:center}
+.carousel-right{flex:1 1 70%;display:flex;flex-direction:column;justify-content:center}
 .carousel-thumb{display:block;border:0;padding:0;background:transparent;width:100%;text-align:left;cursor:pointer}
 .carousel-img{width:100%;height:420px;object-fit:cover;display:block;border-radius:8px}
 .carousel-info{padding:12px}
@@ -116,8 +116,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--white)}
   .main-content{padding:16px 12px 120px}
   .schedule-columns{flex-direction:column}
   .carousel-img{height:380px}
-  .carousel-left{flex:0 0 50%}
-  .carousel-right{flex:1 1 50%}
+  /* keep 30/70 split on tablet/desktop widths */
 }
 @media (max-width:700px){
   .carousel-slide{flex-direction:column;padding:12px}

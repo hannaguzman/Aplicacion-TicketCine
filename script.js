@@ -1,37 +1,54 @@
-// script.js - Render cartelera gallery & carousel placeholder (no external dependencies)
-// Quick loader hide: make the loader disappear quickly on page entry
+// script.js - Carousel + cartelera gallery & loader
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Quick loader behavior: show very briefly then hide with a fast fade
+  // --- Loader quick hide ---
   const loader = document.getElementById('loader-overlay');
   const loaderLogo = document.getElementById('loader-logo');
   if(loaderLogo){ loaderLogo.onerror = () => { try{ loaderLogo.src = '173 sin título_20260824012952.png'; }catch(e){} }; }
+  const minDisplay = 120; const maxFallback = 800; const start = performance.now(); let hidden=false;
+  function hideImmediate(){ if(!loader || hidden) return; hidden=true; loader.classList.add('hidden'); setTimeout(()=>{ if(loader) loader.style.display='none'; },240); }
+  function hideAfterMin(){ if(!loader) return; const elapsed = performance.now()-start; const wait = Math.max(0, minDisplay-elapsed); setTimeout(hideImmediate, wait); }
+  // hide after min (quick) and fallback
+  hideAfterMin(); const fallback = setTimeout(()=>{ if(loader && !hidden) hideImmediate(); }, maxFallback);
 
-  // Reduce display times for a quick disappearance
-  const minDisplay = 120; // ms (very short)
-  const maxFallback = 800; // ms (safety)
-  const start = performance.now(); let hidden = false;
+  // --- Carousel ---
+  const slides = [
+    { title: 'Spider-Man: Brand New Day', img: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg', link: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg' },
+    { title: 'La Odisea', img: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg', link: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg' },
+    { title: 'La muerte de Robin Hood', img: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg', link: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg' },
+    { title: 'Backrooms', img: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg', link: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg' },
+    { title: 'El final de Oak Street', img: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg', link: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg' }
+  ];
 
-  function hideImmediate(){
-    if(!loader || hidden) return;
-    hidden = true;
-    loader.classList.add('hidden');
-    setTimeout(()=>{ if(loader) loader.style.display = 'none'; }, 240); // allow small fade-out
+  const track = document.getElementById('carousel-track');
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
+  const indicators = document.getElementById('carousel-indicators');
+  let current = 0;
+
+  function buildCarousel(){
+    slides.forEach((s,i)=>{
+      const slide = document.createElement('div'); slide.className='carousel-slide';
+      const a = document.createElement('a'); a.href = s.link; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      const img = document.createElement('img'); img.className = 'carousel-img'; img.src = s.img; img.alt = s.title; a.appendChild(img);
+      slide.appendChild(a);
+      const cap = document.createElement('div'); cap.className = 'carousel-caption'; cap.textContent = s.title; slide.appendChild(cap);
+      track.appendChild(slide);
+
+      const ind = document.createElement('button'); ind.addEventListener('click', ()=> goTo(i)); if(i===0) ind.classList.add('active'); indicators.appendChild(ind);
+    });
   }
 
-  function hideAfterMin(){
-    if(!loader) return;
-    const elapsed = performance.now() - start;
-    const wait = Math.max(0, minDisplay - elapsed);
-    setTimeout(hideImmediate, wait);
-  }
+  function updateCarousel(){ track.style.transform = `translateX(${-current*100}%)`; Array.from(indicators.children).forEach((b,idx)=> b.classList.toggle('active', idx===current)); }
+  function next(){ current = (current+1) % slides.length; updateCarousel(); }
+  function prev(){ current = (current-1 + slides.length) % slides.length; updateCarousel(); }
+  function goTo(i){ current = (i + slides.length) % slides.length; updateCarousel(); }
 
-  // Hide quickly on DOMContentLoaded (so users don't wait for full load)
-  hideAfterMin();
-  // Keep fallback in case something blocks
-  const fallback = setTimeout(()=>{ if(loader && !hidden) hideImmediate(); }, maxFallback);
+  prevBtn.addEventListener('click', prev); nextBtn.addEventListener('click', next);
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'ArrowRight') next(); if(e.key === 'ArrowLeft') prev(); });
+  buildCarousel(); updateCarousel();
 
-  // --- Gallery rendering & UI (unchanged) ---
+  // --- Gallery (cartelera) ---
   const posters = [
     { title: 'Engendro', img: 'https://image.tmdb.org/t/p/w500/cVQFWGIt5PNw3p7AcQOq2Eg39G.jpg', duration:'1h 52m', rating:'SP', formats:'2D' },
     { title: 'La invitación', img: 'https://image.tmdb.org/t/p/w500/21JnfyCARiRkms9AZHtTXiZKbIj.jpg', duration:'2h 02m', rating:'13', formats:'2D' },
@@ -47,44 +64,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
   ];
 
   const grid = document.getElementById('gallery-grid');
-  function renderGallery(){
-    grid.innerHTML = '';
-    posters.forEach(p => {
-      const card = document.createElement('article'); card.className = 'card';
-
-      const wrap = document.createElement('div'); wrap.className = 'poster-wrap';
-      const img = document.createElement('img'); img.className = 'poster'; img.src = p.img; img.alt = p.title; img.loading = 'lazy';
-      wrap.appendChild(img);
-
-      const duration = document.createElement('div'); duration.className = 'duration'; duration.textContent = p.duration; wrap.appendChild(duration);
-
-      const smile = document.createElement('div'); smile.className = 'smile'; smile.textContent = '☺'; wrap.appendChild(smile);
-
+  function renderGallery(){ grid.innerHTML = ''; posters.forEach(p=>{
+      const card = document.createElement('article'); card.className='card';
+      const wrap = document.createElement('div'); wrap.className='poster-wrap';
+      const img = document.createElement('img'); img.className='poster'; img.src=p.img; img.alt=p.title; img.loading='lazy'; wrap.appendChild(img);
+      const duration = document.createElement('div'); duration.className='duration'; duration.textContent=p.duration; wrap.appendChild(duration);
+      const smile = document.createElement('div'); smile.className='smile'; smile.textContent='☺'; wrap.appendChild(smile);
       card.appendChild(wrap);
-
-      const body = document.createElement('div'); body.className = 'card-body';
-      const title = document.createElement('h3'); title.className = 'card-title'; title.textContent = p.title;
-      const rating = document.createElement('span'); rating.className = 'class-badge'; rating.textContent = p.rating;
-      title.appendChild(rating);
-      body.appendChild(title);
-
-      const formats = document.createElement('div'); formats.className = 'formats'; formats.textContent = p.formats; body.appendChild(formats);
-
+      const body = document.createElement('div'); body.className='card-body';
+      const title = document.createElement('h3'); title.className='card-title'; title.textContent=p.title; const rating = document.createElement('span'); rating.className='class-badge'; rating.textContent=p.rating; title.appendChild(rating); body.appendChild(title);
+      const formats = document.createElement('div'); formats.className='formats'; formats.textContent=p.formats; body.appendChild(formats);
       card.appendChild(body);
-
-      if(p.premiere){ const tag = document.createElement('div'); tag.className = 'premiere'; tag.textContent = 'Estreno'; card.appendChild(tag); }
-
-      // click opens poster in a new tab
-      card.addEventListener('click', ()=> window.open(p.img, '_blank'));
-
+      if(p.premiere){ const tag = document.createElement('div'); tag.className='premiere'; tag.textContent='Estreno'; card.appendChild(tag); }
+      card.addEventListener('click', ()=> window.open(p.img,'_blank'));
       grid.appendChild(card);
-    });
-  }
-
+    }); }
   renderGallery();
 
-  // Floating quick buy button behaviour (scroll to top for now)
-  const quick = document.getElementById('quick-buy');
-  if(quick) quick.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
+  // Quick buy
+  const quick = document.getElementById('quick-buy'); if(quick) quick.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 });

@@ -22,7 +22,17 @@
     <button class="user" aria-label="Cuenta">👤</button>
   </header>
 
-  <!-- Filters bar under header -->
+  <!-- Carousel: top of the page (under header) -->
+  <section id="carousel" class="carousel" aria-label="Carrusel de películas">
+    <div class="carousel-wrapper">
+      <div class="carousel-track" id="carousel-track" aria-live="polite"></div>
+      <button class="carousel-btn prev" id="carousel-prev" aria-label="Anterior">‹</button>
+      <button class="carousel-btn next" id="carousel-next" aria-label="Siguiente">›</button>
+    </div>
+    <div class="carousel-indicators" id="carousel-indicators" aria-hidden="true"></div>
+  </section>
+
+  <!-- Filters bar (sticky: will sit below carousel and stick to top when scrolled) -->
   <div class="filters-bar">
     <div class="filters-inner">
       <div class="filter-left">

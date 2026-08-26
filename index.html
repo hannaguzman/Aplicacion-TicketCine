@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TicketCine - Inicio</title>
+  <title>TicketCine - Cartelera</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Loader splash: centered logo and credit -->
+  <!-- Loader splash -->
   <div id="loader-overlay" role="status" aria-label="Cargando sitio">
     <div class="loader-inner">
       <img id="loader-logo" class="loader-logo" src="173 sin título_2026824012952.png" alt="TicketCine logo">
@@ -22,27 +22,42 @@
     <button class="user" aria-label="Cuenta">👤</button>
   </header>
 
-  <!-- Carousel: colocado inmediatamente debajo del header -->
-  <section id="carousel" class="carousel" aria-label="Carrusel de películas">
-    <div class="carousel-wrapper">
-      <div class="carousel-track" id="carousel-track" aria-live="polite"></div>
-      <button class="carousel-btn prev" id="carousel-prev" aria-label="Anterior">‹</button>
-      <button class="carousel-btn next" id="carousel-next" aria-label="Siguiente">›</button>
+  <!-- Filters bar under header -->
+  <div class="filters-bar">
+    <div class="filters-inner">
+      <div class="filter-left">
+        <button class="filter-btn">📍 Elegí cine ▾</button>
+      </div>
+      <div class="filter-right">
+        <button class="filter-btn">🎬 Elegí película ▾</button>
+      </div>
     </div>
-    <div class="carousel-indicators" id="carousel-indicators" aria-hidden="true"></div>
-  </section>
+    <div class="filters-separator" aria-hidden="true"></div>
+  </div>
 
-  <!-- Contenido principal: galería de posters (continuación al bajar) -->
+  <!-- Main content -->
   <main class="main-content">
-    <section id="gallery" class="gallery">
-      <div class="gallery-header">
-        <h2>Películas</h2>
+    <!-- Section header -->
+    <section class="cartelera">
+      <div class="cartelera-header">
+        <h1 class="section-title">PELÍCULAS EN CARTELERA</h1>
+        <button class="highlight-badge"><span class="smile">😊</span> DESTACADO</button>
       </div>
-      <div id="gallery-grid" class="gallery-grid" aria-live="polite">
-        <!-- tarjetas generadas por script.js -->
+
+      <!-- Subfilters -->
+      <div class="subfilters">
+        <button class="subfilter">Formatos ▾</button>
+        <button class="subfilter">Idioma ▾</button>
+        <button class="subfilter">Otras opciones ▾</button>
       </div>
+
+      <!-- Gallery grid -->
+      <div id="gallery-grid" class="gallery-grid" aria-live="polite"></div>
     </section>
   </main>
+
+  <!-- Floating quick-buy button -->
+  <button id="quick-buy" class="quick-buy">⚡ COMPRA RÁPIDA ▾</button>
 
   <script src="script.js"></script>
 </body>

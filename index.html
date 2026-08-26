@@ -82,16 +82,48 @@
     </div>
   </div>
 
-  <!-- Buy modal (added) -->
+  <!-- Buy modal (HTML/CSS form) -->
   <div id="buy-overlay" class="buy-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Comprar entradas">
     <div class="buy-backdrop" id="buy-backdrop"></div>
     <div class="buy-container">
       <button id="buy-close" class="buy-close" aria-label="Cerrar compra">✕</button>
       <h3 id="buy-title">Título de la película</h3>
       <div id="buy-info">Día y horario seleccionados</div>
-      <div class="buy-actions">
-        <button id="buy-proceed" class="buy-proceed">Continuar compra</button>
-      </div>
+
+      <form id="buy-form" class="buy-form" aria-label="Formulario de compra">
+        <div class="form-row">
+          <label for="buy-qty">Cantidad de entradas</label>
+          <input id="buy-qty" name="quantity" type="number" min="1" max="10" value="1" aria-describedby="buy-total" />
+        </div>
+
+        <div class="form-row">
+          <label for="buy-type">Tipo de entrada</label>
+          <select id="buy-type" name="type">
+            <option value="general" data-price="120">General - $120</option>
+            <option value="estudiante" data-price="90">Estudiante - $90</option>
+            <option value="vip" data-price="180">VIP - $180</option>
+          </select>
+        </div>
+
+        <div class="form-row total-row">
+          <div>Precio por entrada: <strong id="buy-price">$120</strong></div>
+          <div>Total: <strong id="buy-total">$120</strong></div>
+        </div>
+
+        <div class="form-row">
+          <label for="buyer-name">Nombre</label>
+          <input id="buyer-name" name="buyerName" type="text" placeholder="Tu nombre" />
+        </div>
+
+        <div class="form-row">
+          <label for="buyer-card">Tarjeta</label>
+          <input id="buyer-card" name="card" type="text" placeholder="Número de tarjeta (demo)" />
+        </div>
+
+        <div class="buy-actions">
+          <button id="buy-proceed" class="buy-proceed" type="button">Pagar ahora</button>
+        </div>
+      </form>
     </div>
   </div>
 

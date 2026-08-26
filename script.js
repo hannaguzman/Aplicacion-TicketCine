@@ -1,10 +1,37 @@
 // script.js - Render cartelera gallery & carousel placeholder (no external dependencies)
-// Note: carousel remains in place earlier; this script focuses on rendering the gallery cards
+// Quick loader hide: make the loader disappear quickly on page entry
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  // loader behavior exists elsewhere; ensure gallery renders after DOM ready
+  // Quick loader behavior: show very briefly then hide with a fast fade
+  const loader = document.getElementById('loader-overlay');
+  const loaderLogo = document.getElementById('loader-logo');
+  if(loaderLogo){ loaderLogo.onerror = () => { try{ loaderLogo.src = '173 sin título_20260824012952.png'; }catch(e){} }; }
 
-  // Posters data (keeping the images you provided)
+  // Reduce display times for a quick disappearance
+  const minDisplay = 120; // ms (very short)
+  const maxFallback = 800; // ms (safety)
+  const start = performance.now(); let hidden = false;
+
+  function hideImmediate(){
+    if(!loader || hidden) return;
+    hidden = true;
+    loader.classList.add('hidden');
+    setTimeout(()=>{ if(loader) loader.style.display = 'none'; }, 240); // allow small fade-out
+  }
+
+  function hideAfterMin(){
+    if(!loader) return;
+    const elapsed = performance.now() - start;
+    const wait = Math.max(0, minDisplay - elapsed);
+    setTimeout(hideImmediate, wait);
+  }
+
+  // Hide quickly on DOMContentLoaded (so users don't wait for full load)
+  hideAfterMin();
+  // Keep fallback in case something blocks
+  const fallback = setTimeout(()=>{ if(loader && !hidden) hideImmediate(); }, maxFallback);
+
+  // --- Gallery rendering & UI (unchanged) ---
   const posters = [
     { title: 'Engendro', img: 'https://image.tmdb.org/t/p/w500/cVQFWGIt5PNw3p7AcQOq2Eg39G.jpg', duration:'1h 52m', rating:'SP', formats:'2D' },
     { title: 'La invitación', img: 'https://image.tmdb.org/t/p/w500/21JnfyCARiRkms9AZHtTXiZKbIj.jpg', duration:'2h 02m', rating:'13', formats:'2D' },
@@ -58,6 +85,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Floating quick buy button behaviour (scroll to top for now)
   const quick = document.getElementById('quick-buy');
-  quick.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
+  if(quick) quick.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 });

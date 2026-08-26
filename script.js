@@ -29,28 +29,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
     slides.forEach((s,i)=>{
       const slide = document.createElement('div'); slide.className='carousel-slide';
 
-      // make the image/button open the same player as the gallery
+      // left (image)
+      const left = document.createElement('div'); left.className = 'carousel-left';
       const btn = document.createElement('button'); btn.className = 'carousel-thumb'; btn.type = 'button';
       const img = document.createElement('img'); img.className = 'carousel-img'; img.src = s.img; img.alt = s.title; img.loading = 'lazy';
-      // make image focusable for accessibility
       img.tabIndex = 0;
       btn.appendChild(img);
-
-      // Clicking or pressing enter/space opens player
       btn.addEventListener('click', ()=> openPlayer(s, btn));
       img.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openPlayer(s, btn); } });
+      left.appendChild(btn);
 
-      slide.appendChild(btn);
+      // right (info)
+      const right = document.createElement('div'); right.className = 'carousel-right';
+      const info = document.createElement('div'); info.className = 'carousel-info';
+      const tit = document.createElement('div'); tit.textContent = s.title; tit.className = 'carousel-title'; info.appendChild(tit);
+      if(s.synopsis){ const syn = document.createElement('p'); syn.className = 'carousel-synopsis'; syn.textContent = s.synopsis; info.appendChild(syn); }
 
-      // caption with title + short synopsis
-      const cap = document.createElement('div'); cap.className = 'carousel-caption';
-      const tit = document.createElement('div'); tit.textContent = s.title; tit.className = 'carousel-title'; cap.appendChild(tit);
-      if(s.synopsis){ const syn = document.createElement('p'); syn.className = 'carousel-synopsis'; syn.textContent = s.synopsis; cap.appendChild(syn); }
-
-      // Quick schedule preview: show up to 3 times as buttons
       if(s.schedules){
         const schedWrap = document.createElement('div'); schedWrap.className = 'carousel-schedules';
-        // If schedules is an object (days) show first day's items, else assume array
         if(typeof s.schedules === 'object' && !Array.isArray(s.schedules)){
           const days = Object.keys(s.schedules);
           if(days.length>0){
@@ -65,10 +61,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
         } else if(Array.isArray(s.schedules)){
           s.schedules.slice(0,3).forEach(t=>{ const sb = document.createElement('button'); sb.className='schedule-item'; sb.type='button'; sb.textContent = t; sb.addEventListener('click',(e)=>{ e.stopPropagation(); openBuy(s, null, t, sb); }); schedWrap.appendChild(sb); });
         }
-        cap.appendChild(schedWrap);
+        info.appendChild(schedWrap);
       }
 
-      slide.appendChild(cap);
+      right.appendChild(info);
+
+      slide.appendChild(left);
+      slide.appendChild(right);
+
       track.appendChild(slide);
 
       const ind = document.createElement('button'); ind.addEventListener('click', ()=> goTo(i)); if(i===0) ind.classList.add('active'); indicators.appendChild(ind);
@@ -108,6 +108,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const buyTitle = document.getElementById('buy-title');
   const buyInfo = document.getElementById('buy-info');
   const buyProceed = document.getElementById('buy-proceed');
+
+  // Form refs
+  const buyForm = document.getElementById('buy-form');
+  const buyQty = document.getElementById('buy-qty');
+  const buyType = document.getElementById('buy-type');
+  const buyPrice = document.getElementById('buy-price');
+  const buyTotal = document.getElementById('buy-total');
+  const buyerName = document.getElementById('buyer-name');
+
+  // Success overlay refs
+  const successOverlay = document.getElementById('success-overlay');
+  const successClose = document.getElementById('success-close');
+  const successTitle = document.getElementById('success-title');
+  const successSub = document.getElementById('success-sub');
 
   let previouslyFocused = null;
 
@@ -195,6 +209,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
+  function updatePrice(){
+    if(!buyQty || !buyType || !buyPrice || !buyTotal) return;
+    const qty = Math.max(1, Math.min(10, parseInt(buyQty.value,10) || 1));
+    buyQty.value = qty;
+    const opt = buyType.selectedOptions[0];
+    const unit = parseFloat(opt.getAttribute('data-price')) || 0;
+    buyPrice.textContent = `$${unit}`;
+    buyTotal.textContent = `$${unit * qty}`;
+  }
+
   function openPlayer(movie, opener){
     previouslyFocused = opener || document.activeElement;
 
@@ -239,15 +263,31 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     buyTitle.textContent = movie.title;
     buyInfo.textContent = (day? (day + ' ') : '') + (time? time : 'Horario seleccionado');
+
+    // reset form defaults
+    if(buyQty) buyQty.value = 1;
+    if(buyType) buyType.selectedIndex = 0;
+    updatePrice();
+
     buyOverlay.classList.add('active');
     buyOverlay.setAttribute('aria-hidden','false');
     setTimeout(()=>{ if(buyClose) buyClose.focus(); }, 20);
 
-    // wire proceed
-    buyProceed.onclick = ()=>{ // placeholder purchase flow
-      // here you would start the real checkout flow. For demo, show a small confirmation
-      alert(`Iniciando compra para ${movie.title} ${day? day+ ' ' : ''}${time? time : ''}`);
+    // wire proceed (validate and show success overlay)
+    if(buyProceed) buyProceed.onclick = ()=>{
+      // basic validation
+      const qty = buyQty? Math.max(1, parseInt(buyQty.value,10) || 1) : 1;
+      const name = buyerName? (buyerName.value || '').trim() : '';
+      if(!name){
+        if(buyerName){ buyerName.focus(); }
+        return; // require name for demo
+      }
+
+      // close buy modal
       closeBuy();
+
+      // show success overlay (no real payment integration)
+      showSuccess(movie.title);
     };
 
     // close handlers
@@ -263,6 +303,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
   function buyEscHandler(e){ if(e.key === 'Escape') closeBuy(); }
   if(buyClose) buyClose.addEventListener('click', closeBuy);
+
+  // success overlay handlers
+  function showSuccess(title){
+    if(!successOverlay) return alert('Felicitaciones por su compra\nListo para la aventura: le enviamos el ticket a su email');
+    successTitle.textContent = 'Felicitaciones por su compra';
+    successSub.textContent = '¿Listo para la aventura? Te enviamos el Ticket de compra a su email';
+    successOverlay.classList.add('active');
+    successOverlay.setAttribute('aria-hidden','false');
+    setTimeout(()=>{ if(successClose) successClose.focus(); }, 30);
+    document.addEventListener('keydown', successEscHandler);
+  }
+  function closeSuccess(){
+    if(!successOverlay) return;
+    successOverlay.classList.remove('active');
+    successOverlay.setAttribute('aria-hidden','true');
+    document.removeEventListener('keydown', successEscHandler);
+    try{ if(previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus(); }catch(e){}
+  }
+  function successEscHandler(e){ if(e.key === 'Escape') closeSuccess(); }
+  if(successClose) successClose.addEventListener('click', closeSuccess);
+
+  // wire price updates
+  if(buyQty) buyQty.addEventListener('input', updatePrice);
+  if(buyType) buyType.addEventListener('change', updatePrice);
 
   renderGallery();
 

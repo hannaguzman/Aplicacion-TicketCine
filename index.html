@@ -66,6 +66,22 @@
     </section>
   </main>
 
+  <!-- Player modal / inline player (hidden by default). Opens when user clicks poster -->
+  <div id="player-overlay" class="player-overlay" aria-hidden="true">
+    <div class="player-backdrop" id="player-backdrop"></div>
+    <div class="player-container" role="dialog" aria-modal="true" aria-label="Reproductor de tráiler">
+      <button id="player-close" class="player-close" aria-label="Cerrar">✕</button>
+      <div class="player-video">
+        <iframe id="player-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Trailer"></iframe>
+      </div>
+      <hr class="player-sep">
+      <div class="player-schedule">
+        <h3>HORARIO</h3>
+        <div id="schedule-columns" class="schedule-columns"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Floating quick-buy button -->
   <button id="quick-buy" class="quick-buy">⚡ COMPRA RÁPIDA ▾</button>
 

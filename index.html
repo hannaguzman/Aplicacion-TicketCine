@@ -127,6 +127,59 @@
     </div>
   </div>
 
+  <!-- Ticket selector overlay -->
+  <div id="ticket-overlay" class="selector-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Selecciona tus entradas">
+    <div class="selector-backdrop" id="selector-backdrop"></div>
+    <div class="selector-container">
+      <header class="selector-header">
+        <button id="selector-back" class="selector-back" aria-label="Volver">←</button>
+        <h2 class="selector-title">Selecciona tus entradas</h2>
+        <div class="selector-steps" aria-hidden="true">
+          <div class="step active"><span class="circle">1</span></div>
+          <div class="connector"></div>
+          <div class="step"><span class="circle">2</span></div>
+          <div class="connector"></div>
+          <div class="step"><span class="circle">3</span></div>
+          <div class="connector"></div>
+          <div class="step"><span class="circle">4</span></div>
+          <div class="connector"></div>
+          <div class="step"><span class="circle">5</span></div>
+        </div>
+      </header>
+
+      <div class="selector-body">
+        <div class="movie-card selector-movie-card">
+          <img id="selector-poster" class="selector-poster" src="" alt="Poster" />
+          <div class="movie-info">
+            <div id="selector-mov-title" class="movie-name">Título de la película</div>
+            <div id="selector-cinema" class="movie-meta">Sala: Sala 1</div>
+            <div id="selector-datetime" class="movie-meta">Lunes 19:30</div>
+            <div id="selector-format" class="movie-meta">2D - Doblada</div>
+          </div>
+        </div>
+
+        <div id="ticket-list" class="ticket-list" aria-live="polite"></div>
+      </div>
+
+      <div class="selector-footer">
+        <div class="cart-info"><span class="cart-icon">🛒</span> <span id="selector-total">$0</span></div>
+        <button id="selector-continue" class="selector-continue" disabled>Continuar</button>
+      </div>
+
+      <div id="selector-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+    </div>
+  </div>
+
+  <!-- Success overlay (added earlier) -->
+  <div id="success-overlay" class="success-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Compra realizada">
+    <div class="success-backdrop" id="success-backdrop"></div>
+    <div class="success-container">
+      <button id="success-close" class="success-close" aria-label="Cerrar">✕</button>
+      <h2 id="success-title">Felicitaciones por su compra</h2>
+      <p id="success-sub" class="muted">¿Listo para la aventura? Te enviamos el Ticket de compra a su email</p>
+    </div>
+  </div>
+
   <!-- Floating quick-buy button -->
   <button id="quick-buy" class="quick-buy">⚡ COMPRA RÁPIDA ▾</button>
 

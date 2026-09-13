@@ -12,11 +12,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- Carousel ---
   const slides = [
-    { id: 'spiderman', title: 'Spider-Man: Brand New Day', img: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg', trailerId: 'QXibcL7-XbU', synopsis: 'Peter hace malabares con la vida normal y sus responsabilidades como Spider-Man, mientras surge una nueva amenaza.', schedules: { 'Lunes': ['10:00','13:30','16:00'], 'Miércoles': ['19:30','22:10'] } },
-    { id: 'la-odisea', title: 'La Odisea', img: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg', trailerId: '07DAunCV3Mw', synopsis: 'Un viaje épico a través de paisajes insólitos y desafíos personales.', schedules: { 'Martes': ['11:00','14:15'], 'Jueves': ['17:00','20:00'] } },
-    { id: 'robin-hood', title: 'La muerte de Robin Hood', img: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg', trailerId: 'CE-B1PSgsnA', synopsis: 'Una mirada moderna y sombría a la historia del legendario forajido.', schedules: { 'Viernes': ['12:30','15:45','19:00'], 'Sábado': ['21:30'] } },
-    { id: 'backrooms', title: 'Backrooms', img: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg', trailerId: '-pqmvEa0aMk', synopsis: 'Una inmersión en un laberinto que desafía la realidad.', schedules: { 'Domingo': ['10:30','13:00','16:30'] } },
-    { id: 'oak-street', title: 'El final de Oak Street', img: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg', trailerId: 'EgkanoSZR44', synopsis: 'Los vecinos de Oak Street enfrentan una última noche de decisiones difíciles.', schedules: { 'Miércoles': ['12:00','15:15'], 'Domingo': ['18:20','21:00'] } }
+    { id: 'spiderman', title: 'Spider-Man: Brand New Day', img: 'https://image.tmdb.org/t/p/w500/9g0sEFhmvmK4nGhXj8DHuv2noYI.jpg', trailerId: 'QXibcL7-XbU', synopsis: 'Peter hace malabares con la [...]'},
+    { id: 'la-odisea', title: 'La Odisea', img: 'https://image.tmdb.org/t/p/w500/9aeb5U0saB7Tuu0QITaoENZBxFF.jpg', trailerId: '07DAunCV3Mw', synopsis: 'Un viaje épico a través de paisajes insól[...]'},
+    { id: 'robin-hood', title: 'La muerte de Robin Hood', img: 'https://image.tmdb.org/t/p/w500/pC2hVl4J522GcMVc5OghRHSs0tq.jpg', trailerId: 'CE-B1PSgsnA', synopsis: 'Una mirada moderna y sombría[...]'},
+    { id: 'backrooms', title: 'Backrooms', img: 'https://image.tmdb.org/t/p/w500/ur2yYTVGPkEDmLdoQ1Obm2RKXuU.jpg', trailerId: '-pqmvEa0aMk', synopsis: 'Una inmersión en un laberinto que desafía [...]'},
+    { id: 'oak-street', title: 'El final de Oak Street', img: 'https://image.tmdb.org/t/p/w500/g9DUGw8ufetrwhCIrwq3h1NlpWO.jpg', trailerId: 'EgkanoSZR44', synopsis: 'Los vecinos de Oak Street enfr[...]'},
   ];
 
   const track = document.getElementById('carousel-track');
@@ -29,24 +29,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
     slides.forEach((s,i)=>{
       const slide = document.createElement('div'); slide.className='carousel-slide';
 
-      // left (image)
-      const left = document.createElement('div'); left.className = 'carousel-left';
+      // make the image/button open the same player as the gallery
       const btn = document.createElement('button'); btn.className = 'carousel-thumb'; btn.type = 'button';
       const img = document.createElement('img'); img.className = 'carousel-img'; img.src = s.img; img.alt = s.title; img.loading = 'lazy';
+      // make image focusable for accessibility
       img.tabIndex = 0;
       btn.appendChild(img);
+
+      // Clicking or pressing enter/space opens player
       btn.addEventListener('click', ()=> openPlayer(s, btn));
       img.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openPlayer(s, btn); } });
-      left.appendChild(btn);
 
-      // right (info)
-      const right = document.createElement('div'); right.className = 'carousel-right';
-      const info = document.createElement('div'); info.className = 'carousel-info';
-      const tit = document.createElement('div'); tit.textContent = s.title; tit.className = 'carousel-title'; info.appendChild(tit);
-      if(s.synopsis){ const syn = document.createElement('p'); syn.className = 'carousel-synopsis'; syn.textContent = s.synopsis; info.appendChild(syn); }
+      slide.appendChild(btn);
 
+      // caption with title + short synopsis
+      const cap = document.createElement('div'); cap.className = 'carousel-caption';
+      const tit = document.createElement('div'); tit.textContent = s.title; tit.className = 'carousel-title'; cap.appendChild(tit);
+      if(s.synopsis){ const syn = document.createElement('p'); syn.className = 'carousel-synopsis'; syn.textContent = s.synopsis; cap.appendChild(syn); }
+
+      // Quick schedule preview: show up to 3 times as buttons
       if(s.schedules){
         const schedWrap = document.createElement('div'); schedWrap.className = 'carousel-schedules';
+        // If schedules is an object (days) show first day's items, else assume array
         if(typeof s.schedules === 'object' && !Array.isArray(s.schedules)){
           const days = Object.keys(s.schedules);
           if(days.length>0){
@@ -61,14 +65,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         } else if(Array.isArray(s.schedules)){
           s.schedules.slice(0,3).forEach(t=>{ const sb = document.createElement('button'); sb.className='schedule-item'; sb.type='button'; sb.textContent = t; sb.addEventListener('click',(e)=>{ e.stopPropagation(); openBuy(s, null, t, sb); }); schedWrap.appendChild(sb); });
         }
-        info.appendChild(schedWrap);
+        cap.appendChild(schedWrap);
       }
 
-      right.appendChild(info);
-
-      slide.appendChild(left);
-      slide.appendChild(right);
-
+      slide.appendChild(cap);
       track.appendChild(slide);
 
       const ind = document.createElement('button'); ind.addEventListener('click', ()=> goTo(i)); if(i===0) ind.classList.add('active'); indicators.appendChild(ind);
@@ -84,13 +84,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // --- Cartelera gallery with trailers and schedules ---
   const posters = [
-    { id: 'engendro', title: 'Engendro', img: 'https://image.tmdb.org/t/p/w500/cVQFWGIt5PNw3p7AcQOq2Eg39G.jpg', trailerId: 'gelyoVzunGw', synopsis: 'Una historia inquietante sobre lo inesperado en un pueblo aparentemente tranquilo.', schedules: { 'Lunes': ['10:00','13:30','16:00','19:30','22:10'] }, rating: '15+' },
-    { id: 'invitacion', title: 'La invitación', img: 'https://image.tmdb.org/t/p/w500/21JnfyCARiRkms9AZHtTXiZKbIj.jpg', trailerId: 'G7Bo0yV2Xvw', synopsis: 'Una reunión que se convierte en algo mucho más oscuro.', schedules: { 'Martes': ['11:00','14:15','17:00','20:00'] }, rating: 'C' },
-    { id: 'miasma', title: 'Adolescencia, sexo y muerte en campamento Miasma', img: 'https://image.tmdb.org/t/p/w500/8UTCpwvHxWPllCJ7YnaCbffmYyD.jpg', trailerId: 'In4T87vp2xA', synopsis: 'Un grupo de adolescentes afronta deseos, miedos y secretos en un campamento aislado.', schedules: { 'Miércoles': ['09:45','12:30','15:00'] }, rating: '13+' },
-    { id: 'insaciable', title: 'Insaciable', img: 'https://image.tmdb.org/t/p/w500/v9st6lwP4K2i6YCa7kLQVQEuvNZ.jpg', trailerId: 'zIVcNrO-ZFE', synopsis: 'Una ambición implacable pone en peligro todo a su alrededor.', schedules: { 'Jueves': ['10:30','13:00','16:30','19:00'] }, rating: '16+' },
-    { id: 'victoria', title: 'Tiempo de victoria', img: 'https://image.tmdb.org/t/p/w500/byKFPj2xvKkqMKQ4i0Ayq6N7Z9E.jpg', trailerId: 'xIkH-xUVLbk', synopsis: 'La lucha por el triunfo personal en tiempos difíciles.', schedules: { 'Viernes': ['11:30','14:45','18:00','21:15'] }, rating: 'A' },
-    { id: 'arbol', title: 'El árbol muy muy lejano', img: 'https://image.tmdb.org/t/p/w500/udXvLxC5gAqN8SinemyFBEcHpTf.jpg', trailerId: 'Rav3rvrUlpI', synopsis: 'Un viaje mágico hacia un árbol que guarda antiguos secretos.', schedules: { 'Sábado': ['09:30','12:00','15:00','18:20'] }, rating: 'TP' },
-    { id: 'toxico', title: 'Tóxico: Un cuento de hadas para adultos', img: 'https://image.tmdb.org/t/p/w500/bhpSB2g6yCKyxRgvgZ27KUgBHg6.jpg', trailerId: 'EfluEyQ5QIA', synopsis: 'Fábula oscura que mezcla humor y pesadilla.', schedules: { 'Domingo': ['12:15','15:45','19:30'] }, rating: '18+' }
+    { id: 'engendro', title: 'Engendro', img: 'https://image.tmdb.org/t/p/w500/cVQFWGIt5PNw3p7AcQOq2Eg39G.jpg', trailerId: 'gelyoVzunGw', synopsis: 'Una historia inquietante sobre lo inesperado en[...]'},
+    { id: 'invitacion', title: 'La invitación', img: 'https://image.tmdb.org/t/p/w500/21JnfyCARiRkms9AZHtTXiZKbIj.jpg', trailerId: 'G7Bo0yV2Xvw', synopsis: 'Una reunión que se convierte en algo [...]'},
+    { id: 'miasma', title: 'Adolescencia, sexo y muerte en campamento Miasma', img: 'https://image.tmdb.org/t/p/w500/8UTCpwvHxWPllCJ7YnaCbffmYyD.jpg', trailerId: 'In4T87vp2xA', synopsis: 'Un grupo[...]'},
+    { id: 'insaciable', title: 'Insaciable', img: 'https://image.tmdb.org/t/p/w500/v9st6lwP4K2i6YCa7kLQVQEuvNZ.jpg', trailerId: 'zIVcNrO-ZFE', synopsis: 'Una ambición implacable pone en peligro t[...]'},
+    { id: 'victoria', title: 'Tiempo de victoria', img: 'https://image.tmdb.org/t/p/w500/byKFPj2xvKkqMKQ4i0Ayq6N7Z9E.jpg', trailerId: 'xIkH-xUVLbk', synopsis: 'La lucha por el triunfo personal en [...]'},
+    { id: 'arbol', title: 'El árbol muy muy lejano', img: 'https://image.tmdb.org/t/p/w500/udXvLxC5gAqN8SinemyFBEcHpTf.jpg', trailerId: 'Rav3rvrUlpI', synopsis: 'Un viaje mágico hacia un árbol [...]'},
+    { id: 'toxico', title: 'Tóxico: Un cuento de hadas para adultos', img: 'https://image.tmdb.org/t/p/w500/bhpSB2g6yCKyxRgvgZ27KUgBHg6.jpg', trailerId: 'EfluEyQ5QIA', synopsis: 'Fábula oscura q[...]'},
   ];
 
   const grid = document.getElementById('gallery-grid');
@@ -109,20 +109,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const buyInfo = document.getElementById('buy-info');
   const buyProceed = document.getElementById('buy-proceed');
 
-  // Form refs
-  const buyForm = document.getElementById('buy-form');
-  const buyQty = document.getElementById('buy-qty');
-  const buyType = document.getElementById('buy-type');
-  const buyPrice = document.getElementById('buy-price');
-  const buyTotal = document.getElementById('buy-total');
-  const buyerName = document.getElementById('buyer-name');
-
-  // Success overlay refs
-  const successOverlay = document.getElementById('success-overlay');
-  const successClose = document.getElementById('success-close');
-  const successTitle = document.getElementById('success-title');
-  const successSub = document.getElementById('success-sub');
-
   let previouslyFocused = null;
 
   function renderGallery(){
@@ -133,7 +119,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const img = document.createElement('img'); img.className = 'poster'; img.src = p.img; img.alt = p.title; img.loading = 'lazy';
       img.tabIndex = 0; // make focusable
       wrap.appendChild(img);
-      const duration = document.createElement('div'); duration.className = 'duration'; duration.textContent = p.schedules && (Array.isArray(p.schedules)? p.schedules[0] : Object.values(p.schedules)[0][0]) || '';
+      const duration = document.createElement('div'); duration.className = 'duration'; duration.textContent = p.schedules && (Array.isArray(p.schedules)? p.schedules[0] : Object.values(p.schedules || {})[0] || '');
       wrap.appendChild(duration);
       const smile = document.createElement('div'); smile.className = 'smile'; smile.textContent = '☺'; wrap.appendChild(smile);
       card.appendChild(wrap);
@@ -209,16 +195,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-  function updatePrice(){
-    if(!buyQty || !buyType || !buyPrice || !buyTotal) return;
-    const qty = Math.max(1, Math.min(10, parseInt(buyQty.value,10) || 1));
-    buyQty.value = qty;
-    const opt = buyType.selectedOptions[0];
-    const unit = parseFloat(opt.getAttribute('data-price')) || 0;
-    buyPrice.textContent = `$${unit}`;
-    buyTotal.textContent = `$${unit * qty}`;
-  }
-
   function openPlayer(movie, opener){
     previouslyFocused = opener || document.activeElement;
 
@@ -263,31 +239,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     buyTitle.textContent = movie.title;
     buyInfo.textContent = (day? (day + ' ') : '') + (time? time : 'Horario seleccionado');
-
-    // reset form defaults
-    if(buyQty) buyQty.value = 1;
-    if(buyType) buyType.selectedIndex = 0;
-    updatePrice();
-
     buyOverlay.classList.add('active');
     buyOverlay.setAttribute('aria-hidden','false');
     setTimeout(()=>{ if(buyClose) buyClose.focus(); }, 20);
 
-    // wire proceed (validate and show success overlay)
-    if(buyProceed) buyProceed.onclick = ()=>{
-      // basic validation
-      const qty = buyQty? Math.max(1, parseInt(buyQty.value,10) || 1) : 1;
-      const name = buyerName? (buyerName.value || '').trim() : '';
-      if(!name){
-        if(buyerName){ buyerName.focus(); }
-        return; // require name for demo
-      }
-
-      // close buy modal
+    // wire proceed
+    buyProceed.onclick = ()=>{ // placeholder purchase flow
+      // here you would start the real checkout flow. For demo, show a small confirmation
+      alert(`Iniciando compra para ${movie.title} ${day? day+ ' ' : ''}${time? time : ''}`);
       closeBuy();
-
-      // show success overlay (no real payment integration)
-      showSuccess(movie.title);
     };
 
     // close handlers
@@ -304,31 +264,173 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function buyEscHandler(e){ if(e.key === 'Escape') closeBuy(); }
   if(buyClose) buyClose.addEventListener('click', closeBuy);
 
-  // success overlay handlers
-  function showSuccess(title){
-    if(!successOverlay) return alert('Felicitaciones por su compra\nListo para la aventura: le enviamos el ticket a su email');
-    successTitle.textContent = 'Felicitaciones por su compra';
-    successSub.textContent = '¿Listo para la aventura? Te enviamos el Ticket de compra a su email';
-    successOverlay.classList.add('active');
-    successOverlay.setAttribute('aria-hidden','false');
-    setTimeout(()=>{ if(successClose) successClose.focus(); }, 30);
-    document.addEventListener('keydown', successEscHandler);
-  }
-  function closeSuccess(){
-    if(!successOverlay) return;
-    successOverlay.classList.remove('active');
-    successOverlay.setAttribute('aria-hidden','true');
-    document.removeEventListener('keydown', successEscHandler);
-    try{ if(previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus(); }catch(e){}
-  }
-  function successEscHandler(e){ if(e.key === 'Escape') closeSuccess(); }
-  if(successClose) successClose.addEventListener('click', closeSuccess);
-
-  // wire price updates
-  if(buyQty) buyQty.addEventListener('input', updatePrice);
-  if(buyType) buyType.addEventListener('change', updatePrice);
-
   renderGallery();
+
+  // --- PanelHorarios component (vanilla JS) ---
+  (function () {
+    const MOCK_CINES = [
+      { id: 'cine-1', name: 'CINEMARK ASIA', salas: ['Sala 1', 'Sala 2'] },
+      { id: 'cine-2', name: 'CINE CENTRAL', salas: ['Principal'] },
+      { id: 'cine-3', name: 'CINE PLAZA', salas: ['Sala A'] }
+    ];
+    const MOCK_SCHEDULES = [
+      { time: '14:30', availability: 'alta' },
+      { time: '17:00', availability: 'media' },
+      { time: '19:45', availability: 'baja' },
+      { time: '22:15', availability: 'lleno' }
+    ];
+
+    const phSection = document.getElementById('panel-horarios');
+    const phToggleBtn = document.getElementById('ph-toggle-btn');
+    const phContent = document.getElementById('ph-content');
+    const phFormatBtn = document.getElementById('ph-format-btn');
+    const phLanguageBtn = document.getElementById('ph-language-btn');
+    const phFormatMenu = document.getElementById('ph-format-menu');
+    const phLanguageMenu = document.getElementById('ph-language-menu');
+    const phCineLine = document.getElementById('ph-cine-line');
+    const phCineList = document.getElementById('ph-cine-list');
+    const phCineName = document.getElementById('ph-cine-name');
+    const phGrid = document.getElementById('ph-grid');
+    const selectorAnnouncer = null;
+
+    let state = {
+      open: false,
+      selectedFormat: '2D',
+      selectedLanguage: 'Doblada',
+      selectedCineId: MOCK_CINES[0].id,
+      schedules: MOCK_SCHEDULES.slice()
+    };
+
+    const FORMATS = ['2D', '3D', '4DX'];
+    const LANGS = ['Doblada', 'Subtitulada'];
+
+    function showElement(el){ if(el) el.hidden = false; }
+    function hideElement(el){ if(el) el.hidden = true; }
+    function setAriaExpanded(el,val){ if(el) el.setAttribute('aria-expanded', !!val); }
+
+    function togglePanel(open){
+      state.open = typeof open === 'boolean' ? open : !state.open;
+      if(state.open){
+        if(phSection) phSection.setAttribute('aria-hidden','false');
+        showElement(phContent); setAriaExpanded(phToggleBtn,true); phToggleBtn && phToggleBtn.focus();
+      } else {
+        if(phSection) phSection.setAttribute('aria-hidden','true');
+        hideElement(phContent); setAriaExpanded(phToggleBtn,false);
+      }
+    }
+
+    function renderCineList(){
+      if(!phCineList) return;
+      phCineList.innerHTML = '';
+      MOCK_CINES.forEach(c=>{
+        const item = document.createElement('div');
+        item.className = 'ph-menu item';
+        item.textContent = c.name;
+        item.setAttribute('role','option');
+        item.tabIndex = 0;
+        item.onclick = ()=>{
+          state.selectedCineId = c.id;
+          if(phCineName) phCineName.textContent = c.name;
+          phCineList.hidden = true;
+          phCineLine && phCineLine.setAttribute('aria-expanded','false');
+          renderGrid(state.schedules);
+        };
+        item.onkeydown = (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); item.click(); } };
+        phCineList.appendChild(item);
+      });
+    }
+
+    function renderFormatMenu(){
+      if(!phFormatMenu) return;
+      phFormatMenu.innerHTML = '';
+      FORMATS.forEach(f=>{
+        const it = document.createElement('div'); it.className='item'; it.textContent=f; it.tabIndex=0;
+        it.onclick = ()=>{ state.selectedFormat = f; phFormatMenu.hidden=true; phFormatBtn && phFormatBtn.setAttribute('aria-expanded','false'); renderGrid(state.schedules); };
+        it.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); it.click(); } };
+        phFormatMenu.appendChild(it);
+      });
+    }
+    function renderLanguageMenu(){
+      if(!phLanguageMenu) return;
+      phLanguageMenu.innerHTML = '';
+      LANGS.forEach(l=>{
+        const it = document.createElement('div'); it.className='item'; it.textContent=l; it.tabIndex=0;
+        it.onclick = ()=>{ state.selectedLanguage = l; phLanguageMenu.hidden=true; phLanguageBtn && phLanguageBtn.setAttribute('aria-expanded','false'); renderGrid(state.schedules); };
+        it.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); it.click(); } };
+        phLanguageMenu.appendChild(it);
+      });
+    }
+
+    function renderGrid(schedules){
+      if(!phGrid) return;
+      phGrid.innerHTML = '';
+      schedules.forEach(s=>{
+        const btn = document.createElement('button');
+        btn.className = `slot ${s.availability}`;
+        btn.type = 'button'; btn.textContent = s.time;
+        btn.dataset.time = s.time; btn.dataset.availability = s.availability;
+        if(s.availability === 'lleno'){ btn.classList.add('disabled'); btn.setAttribute('aria-disabled','true'); btn.disabled=true; }
+        else {
+          btn.addEventListener('click', ()=>{
+            const payload = { horario: s.time, cineId: state.selectedCineId, formato: state.selectedFormat, idioma: state.selectedLanguage };
+            window.dispatchEvent(new CustomEvent('PanelHorarios:Seleccion',{ detail: payload }));
+            btn.focus();
+          });
+        }
+        phGrid.appendChild(btn);
+      });
+    }
+
+    function attachHandlers(){
+      if(phToggleBtn){ phToggleBtn.addEventListener('click', ()=> togglePanel(true)); phToggleBtn.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); togglePanel(true); } }); }
+      if(phFormatBtn) phFormatBtn.addEventListener('click', ()=>{ phFormatMenu.hidden = !phFormatMenu.hidden; phFormatBtn.setAttribute('aria-expanded', phFormatMenu.hidden ? 'false':'true'); });
+      if(phLanguageBtn) phLanguageBtn.addEventListener('click', ()=>{ phLanguageMenu.hidden = !phLanguageMenu.hidden; phLanguageBtn.setAttribute('aria-expanded', phLanguageMenu.hidden ? 'false':'true'); });
+      if(phCineLine){ phCineLine.addEventListener('click', ()=>{ phCineList.hidden = !phCineList.hidden; phCineLine.setAttribute('aria-expanded', phCineList.hidden ? 'false' : 'true'); }); phCineLine.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); phCineLine.click(); } }); }
+
+      document.addEventListener('keydown', (e)=> {
+        if(e.key==='Escape'){
+          if(phFormatMenu) phFormatMenu.hidden=true;
+          if(phLanguageMenu) phLanguageMenu.hidden=true;
+          if(phCineList) phCineList.hidden=true;
+          phFormatBtn && phFormatBtn.setAttribute('aria-expanded','false');
+          phLanguageBtn && phLanguageBtn.setAttribute('aria-expanded','false');
+          phCineLine && phCineLine.setAttribute('aria-expanded','false');
+          if(state.open) togglePanel(false);
+        }
+      });
+
+      document.addEventListener('click', (e)=>{
+        if(!phContent.contains(e.target) && !phToggleBtn.contains(e.target)){
+          if(phFormatMenu) phFormatMenu.hidden=true;
+          if(phLanguageMenu) phLanguageMenu.hidden=true;
+          if(phCineList) phCineList.hidden=true;
+          phFormatBtn && phFormatBtn.setAttribute('aria-expanded','false');
+          phLanguageBtn && phLanguageBtn.setAttribute('aria-expanded','false');
+          phCineLine && phCineLine.setAttribute('aria-expanded','false');
+        }
+      });
+    }
+
+    function openPanelFor(movie, cineId, schedules){
+      if(cineId) state.selectedCineId = cineId;
+      if(Array.isArray(schedules)) state.schedules = schedules.slice();
+      const cine = MOCK_CINES.find(c=>c.id===state.selectedCineId);
+      if(cine && phCineName) phCineName.textContent = cine.name;
+      togglePanel(true);
+      renderGrid(state.schedules);
+      renderCineList();
+      renderFormatMenu();
+      renderLanguageMenu();
+    }
+
+    window.PanelHorarios = { openPanelFor, renderGrid, renderCineList };
+
+    attachHandlers();
+    renderCineList();
+    renderFormatMenu();
+    renderLanguageMenu();
+    renderGrid(state.schedules);
+  })();
 
   // Quick buy
   const quick = document.getElementById('quick-buy'); if(quick) quick.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));

@@ -61,6 +61,48 @@
         <button class="subfilter">Otras opciones ▾</button>
       </div>
 
+      <!-- PanelHorarios: inserto aquí -->
+      <section id="panel-horarios" class="panel-horarios" aria-hidden="true">
+        <div class="ph-header">
+          <button id="ph-toggle-btn" class="ph-button" aria-expanded="false" aria-controls="ph-content">
+            <span>VER LA CARTELERA POR CINE</span>
+            <span class="chev">›</span>
+          </button>
+        </div>
+
+        <div id="ph-content" hidden>
+          <div class="ph-filters" role="toolbar" aria-label="Filtros">
+            <button id="ph-format-btn" class="ph-filter" aria-haspopup="true" aria-expanded="false">Formatos <span>▼</span></button>
+            <button id="ph-language-btn" class="ph-filter" aria-haspopup="true" aria-expanded="false">Idioma <span>▼</span></button>
+          </div>
+
+          <div class="ph-legend">
+            <h4>DISPONIBILIDAD DE ASIENTOS</h4>
+            <div class="legend-row" role="list">
+              <div class="legend-item" role="listitem"><span class="legend-icon legend-alta" aria-hidden="true"></span> Alta</div>
+              <div class="legend-item" role="listitem"><span class="legend-icon legend-media" aria-hidden="true"></span> Media</div>
+              <div class="legend-item" role="listitem"><span class="legend-icon legend-baja" aria-hidden="true"></span> Baja</div>
+              <div class="legend-item" role="listitem"><span class="legend-icon legend-lleno" aria-hidden="true"></span> Lleno</div>
+            </div>
+          </div>
+
+          <div class="ph-cine">
+            <div class="small-label">CINE PRINCIPAL</div>
+            <div id="ph-cine-line" class="cine-line" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+              <div class="cine-text">HORARIOS EN <span id="ph-cine-name" class="cine-name">CINEMARK ASIA</span></div>
+              <div class="chev-down">▼</div>
+            </div>
+
+            <div id="ph-cine-list" class="ph-cine-list" hidden role="listbox" aria-label="Seleccionar cine"></div>
+          </div>
+
+          <div id="ph-grid" class="ph-grid" aria-live="polite" aria-label="Horarios disponibles"></div>
+
+          <div id="ph-format-menu" class="ph-menu" role="menu" hidden></div>
+          <div id="ph-language-menu" class="ph-menu" role="menu" hidden></div>
+        </div>
+      </section>
+
       <!-- Gallery grid -->
       <div id="gallery-grid" class="gallery-grid" aria-live="polite"></div>
     </section>

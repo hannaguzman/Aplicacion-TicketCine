@@ -61,48 +61,6 @@
         <button class="subfilter">Otras opciones ▾</button>
       </div>
 
-      <!-- PanelHorarios: inserto aquí -->
-      <section id="panel-horarios" class="panel-horarios" aria-hidden="true">
-        <div class="ph-header">
-          <button id="ph-toggle-btn" class="ph-button" aria-expanded="false" aria-controls="ph-content">
-            <span>VER LA CARTELERA POR CINE</span>
-            <span class="chev">›</span>
-          </button>
-        </div>
-
-        <div id="ph-content" hidden>
-          <div class="ph-filters" role="toolbar" aria-label="Filtros">
-            <button id="ph-format-btn" class="ph-filter" aria-haspopup="true" aria-expanded="false">Formatos <span>▼</span></button>
-            <button id="ph-language-btn" class="ph-filter" aria-haspopup="true" aria-expanded="false">Idioma <span>▼</span></button>
-          </div>
-
-          <div class="ph-legend">
-            <h4>DISPONIBILIDAD DE ASIENTOS</h4>
-            <div class="legend-row" role="list">
-              <div class="legend-item" role="listitem"><span class="legend-icon legend-alta" aria-hidden="true"></span> Alta</div>
-              <div class="legend-item" role="listitem"><span class="legend-icon legend-media" aria-hidden="true"></span> Media</div>
-              <div class="legend-item" role="listitem"><span class="legend-icon legend-baja" aria-hidden="true"></span> Baja</div>
-              <div class="legend-item" role="listitem"><span class="legend-icon legend-lleno" aria-hidden="true"></span> Lleno</div>
-            </div>
-          </div>
-
-          <div class="ph-cine">
-            <div class="small-label">CINE PRINCIPAL</div>
-            <div id="ph-cine-line" class="cine-line" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
-              <div class="cine-text">HORARIOS EN <span id="ph-cine-name" class="cine-name">CINEMARK ASIA</span></div>
-              <div class="chev-down">▼</div>
-            </div>
-
-            <div id="ph-cine-list" class="ph-cine-list" hidden role="listbox" aria-label="Seleccionar cine"></div>
-          </div>
-
-          <div id="ph-grid" class="ph-grid" aria-live="polite" aria-label="Horarios disponibles"></div>
-
-          <div id="ph-format-menu" class="ph-menu" role="menu" hidden></div>
-          <div id="ph-language-menu" class="ph-menu" role="menu" hidden></div>
-        </div>
-      </section>
-
       <!-- Gallery grid -->
       <div id="gallery-grid" class="gallery-grid" aria-live="polite"></div>
     </section>
@@ -124,65 +82,48 @@
     </div>
   </div>
 
-  <!-- Buy modal (estilo Cinemark) -->
+  <!-- Buy modal (HTML/CSS form) -->
   <div id="buy-overlay" class="buy-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Comprar entradas">
     <div class="buy-backdrop" id="buy-backdrop"></div>
     <div class="buy-container">
       <button id="buy-close" class="buy-close" aria-label="Cerrar compra">✕</button>
-
-      <div class="buy-header">
-        <h3 id="buy-title">Título de la película</h3>
-        <span id="buy-rating" class="buy-rating-badge">TP</span>
-      </div>
-
-      <div class="buy-schedule-info">
-        <span class="buy-schedule-icon">🕒</span>
-        <span id="buy-info">Día y horario seleccionados</span>
-      </div>
-
-      <hr class="buy-sep">
+      <h3 id="buy-title">Título de la película</h3>
+      <div id="buy-info">Día y horario seleccionados</div>
 
       <form id="buy-form" class="buy-form" aria-label="Formulario de compra">
-
-        <div class="form-section">
-          <h4 class="form-section-title">TIPO DE ENTRADA</h4>
-          <div id="ticket-type-options" class="ticket-type-options"></div>
+        <div class="form-row">
+          <label for="buy-qty">Cantidad de entradas</label>
+          <input id="buy-qty" name="quantity" type="number" min="1" max="10" value="1" aria-describedby="buy-total" />
         </div>
 
-        <div class="form-section">
-          <h4 class="form-section-title">CANTIDAD DE ENTRADAS</h4>
-          <div class="qty-stepper">
-            <button type="button" id="qty-minus" class="qty-btn" aria-label="Restar entrada">−</button>
-            <span id="buy-qty-display" class="qty-display">1</span>
-            <button type="button" id="qty-plus" class="qty-btn" aria-label="Sumar entrada">+</button>
-          </div>
+        <div class="form-row">
+          <label for="buy-type">Tipo de entrada</label>
+          <select id="buy-type" name="type">
+            <option value="general" data-price="120">General - $120</option>
+            <option value="estudiante" data-price="90">Estudiante - $90</option>
+            <option value="vip" data-price="180">VIP - $180</option>
+          </select>
         </div>
 
-        <div class="form-section total-section">
-          <div class="total-line">
-            <span>Precio por entrada</span>
-            <strong id="buy-price">$120</strong>
-          </div>
-          <div class="total-line total-line-main">
-            <span>Total</span>
-            <strong id="buy-total">$120</strong>
-          </div>
+        <div class="form-row total-row">
+          <div>Precio por entrada: <strong id="buy-price">$120</strong></div>
+          <div>Total: <strong id="buy-total">$120</strong></div>
+        </div>
+
+        <div class="form-row">
+          <label for="buyer-name">Nombre</label>
+          <input id="buyer-name" name="buyerName" type="text" placeholder="Tu nombre" />
+        </div>
+
+        <div class="form-row">
+          <label for="buyer-card">Tarjeta</label>
+          <input id="buyer-card" name="card" type="text" placeholder="Número de tarjeta (demo)" />
         </div>
 
         <div class="buy-actions">
-          <button id="buy-proceed" class="buy-proceed" type="button">Siguiente</button>
+          <button id="buy-proceed" class="buy-proceed" type="button">Pagar ahora</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- Success overlay -->
-  <div id="success-overlay" class="success-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Compra exitosa">
-    <div class="success-backdrop" id="success-backdrop"></div>
-    <div class="success-container">
-      <button id="success-close" class="success-close" aria-label="Cerrar">✕</button>
-      <h2 id="success-title">Felicitaciones por su compra</h2>
-      <p id="success-sub" class="muted">¿Listo para la aventura? Te enviamos el Ticket de compra a su email</p>
     </div>
   </div>
 

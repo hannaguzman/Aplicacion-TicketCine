@@ -1,11 +1,24 @@
 // script.js - Carousel + cartelera gallery & embedded trailer player
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  // --- Loader quick hide ---
+  // --- Loader: animated "Ticket Cine" intro ---
   const loader = document.getElementById('loader-overlay');
-  const loaderLogo = document.getElementById('loader-logo');
-  if(loaderLogo){ loaderLogo.onerror = () => { try{ loaderLogo.src = '173 sin título_20260824012952.png'; }catch(e){} }; }
-  const minDisplay = 120; const maxFallback = 800; const start = performance.now(); let hidden=false;
+  const loaderTitle = document.getElementById('loader-title');
+
+  if(loaderTitle){
+    const text = "Ticket Cine";
+    [...text].forEach((char, i) => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      if(char === ' ') span.classList.add('space');
+      span.style.animationDelay = `${i * 0.07}s`;
+      loaderTitle.appendChild(span);
+    });
+  }
+
+  // Give the animation room to finish (letters + underline finish around 2.2s)
+  // before the splash hides and the site becomes visible.
+  const minDisplay = 2200; const maxFallback = 3200; const start = performance.now(); let hidden=false;
   function hideImmediate(){ if(!loader || hidden) return; hidden=true; loader.classList.add('hidden'); setTimeout(()=>{ if(loader) loader.style.display='none'; },240); }
   function hideAfterMin(){ if(!loader) return; const elapsed = performance.now()-start; const wait = Math.max(0, minDisplay-elapsed); setTimeout(hideImmediate, wait); }
   hideAfterMin(); const fallback = setTimeout(()=>{ if(loader && !hidden) hideImmediate(); }, maxFallback);
@@ -101,6 +114,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const playerClose = document.getElementById('player-close');
   const playerIframe = document.getElementById('player-iframe');
   const scheduleColumns = document.getElementById('schedule-columns');
+  const scheduleContinue = document.getElementById('schedule-continue');
+  let selectedSchedule = null;
 
   // Buy modal refs
   const buyOverlay = document.getElementById('buy-overlay');
@@ -166,8 +181,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
     return { morning, afternoon, night };
   }
 
+  function selectScheduleItem(movie, day, time, btnEl){
+    document.querySelectorAll('.schedule-item.selected').forEach(b => b.classList.remove('selected'));
+    btnEl.classList.add('selected');
+    selectedSchedule = { movie, day, time };
+    if(scheduleContinue) scheduleContinue.classList.add('visible');
+  }
+
+  function resetScheduleSelection(){
+    selectedSchedule = null;
+    if(scheduleContinue) scheduleContinue.classList.remove('visible');
+  }
+
   function buildScheduleColumnsForMovie(movie){
     scheduleColumns.innerHTML = '';
+    resetScheduleSelection();
     // support schedules as object (days) or array
     if(movie.schedules && typeof movie.schedules === 'object' && !Array.isArray(movie.schedules)){
       // iterate days in order
@@ -183,7 +211,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           const showSection = (label, arr) => {
             if(arr.length===0) return;
             const secLabel = document.createElement('div'); secLabel.className='time-section-label'; secLabel.textContent = label; list.appendChild(secLabel);
-            arr.forEach(time => { const it = document.createElement('button'); it.className='schedule-item'; it.type='button'; it.textContent = time; it.addEventListener('click', (e)=> { e.stopPropagation(); openBuy(movie, day, time, it); }); list.appendChild(it); });
+            arr.forEach(time => { const it = document.createElement('button'); it.className='schedule-item'; it.type='button'; it.textContent = time; it.addEventListener('click', (e)=> { e.stopPropagation(); selectScheduleItem(movie, day, time, it); }); list.appendChild(it); });
           };
           showSection('Mañana', morning);
           showSection('Tarde', afternoon);
@@ -202,7 +230,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const h = document.createElement('h4'); h.textContent = col.title; c.appendChild(h);
         const list = document.createElement('div'); list.className = 'schedule-list';
         if(col.items.length === 0){ const none = document.createElement('div'); none.className='schedule-item'; none.textContent = '-'; list.appendChild(none); }
-        col.items.forEach(time=>{ const it = document.createElement('button'); it.className='schedule-item'; it.type='button'; it.textContent = time; it.addEventListener('click',(e)=>{ e.stopPropagation(); openBuy(movie, null, time, it); }); list.appendChild(it); });
+        col.items.forEach(time=>{ const it = document.createElement('button'); it.className='schedule-item'; it.type='button'; it.textContent = time; it.addEventListener('click',(e)=>{ e.stopPropagation(); selectScheduleItem(movie, null, time, it); }); list.appendChild(it); });
         c.appendChild(list);
         scheduleColumns.appendChild(c);
       });
@@ -248,6 +276,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // stop video
     playerIframe.src = '';
     document.removeEventListener('keydown', escHandler);
+    resetScheduleSelection();
     // restore focus to previously focused element (poster/carousel thumb)
     try{ if(previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus(); }catch(e){}
   }
@@ -255,6 +284,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function escHandler(e){ if(e.key === 'Escape') closePlayer(); }
 
   if(playerClose) playerClose.addEventListener('click', closePlayer);
+
+  if(scheduleContinue) scheduleContinue.addEventListener('click', ()=>{
+    if(!selectedSchedule) return;
+    closePlayer();
+    document.getElementById('ticketcine-home').hidden = true;
+    document.getElementById('horarios-app').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
 
   // BUY modal logic
   function openBuy(movie, day, time, opener){
@@ -334,3 +371,618 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const quick = document.getElementById('quick-buy'); if(quick) quick.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 });
+
+
+// ============================================================
+// Flujo de Horarios / Butacas / Snacks / Pago / Factura
+// ============================================================
+// ---------- Datos ----------
+
+  const CINES = [
+    { name: "Cinemark Caballito", address: "Av. La Plata 96, Caballito, CABA" },
+    { name: "Hoyts Abasto", address: "Av. Corrientes 3247, Abasto, CABA" },
+    { name: "Cinemark Palermo", address: "Beruti 3399, Palermo, CABA" },
+    { name: "Cinemark Puerto Madero", address: "Av. Alicia Moreau de Justo 1920, Puerto Madero, CABA" },
+    { name: "Cinemark Quilmes", address: "Quilmes Factory Shopping, Quilmes, Buenos Aires" },
+    { name: "Cinemark Unicenter", address: "Unicenter Shopping, Martínez, Buenos Aires" },
+    { name: "Cinemark Nine Moreno", address: "Av. Victorica 1128, Nine Shopping, Moreno, Buenos Aires" },
+    { name: "Hoyts Plaza Oeste", address: "J. M. de Rosas 658, Plaza Oeste Shopping, Morón, Buenos Aires" }
+  ];
+
+  // Cada formato define el nivel de disponibilidad que se enciende
+  const FORMATOS = [
+    { name: "2D", level: "alta", price: 6500 },
+    { name: "3D", level: "media", price: 8000 },
+    { name: "MAX", level: "alta", price: 9500 },
+    { name: "XD", level: "media", price: 8500 },
+    { name: "4D E-Motion", level: "baja", price: 11000 },
+    { name: "VIP", level: "lleno", price: 14000 }
+  ];
+
+  const IDIOMAS = [
+    { name: "Español" },
+    { name: "Inglés" },
+    { name: "Portugués" },
+    { name: "Chino" }
+  ];
+
+  // ---------- Estado (se mantiene mientras dure la sesión) ----------
+
+  const state = {
+    cine: null,
+    formato: null,
+    idioma: null
+  };
+
+  const checkIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+  // ---------- Construcción de paneles ----------
+
+  function buildCinePanel(){
+    const panel = document.getElementById('cinePanel');
+    panel.innerHTML = '';
+    CINES.forEach(cine => {
+      const row = document.createElement('div');
+      row.className = 'option-row' + (state.cine === cine.name ? ' selected' : '');
+      row.innerHTML = `
+        <div class="option-main">
+          <span class="option-name">${cine.name}</span>
+          <span class="option-address">${cine.address}</span>
+        </div>
+        <span class="check">${checkIcon}</span>
+      `;
+      row.addEventListener('click', () => {
+        state.cine = cine.name;
+        refreshUI();
+        closePanel('cine');
+      });
+      panel.appendChild(row);
+    });
+  }
+
+  function buildFormatoPanel(){
+    const panel = document.getElementById('formatoPanel');
+    panel.innerHTML = '';
+    FORMATOS.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'option-row' + (state.formato === f.name ? ' selected' : '');
+      row.innerHTML = `
+        <div class="option-main">
+          <span class="option-name">${f.name}</span>
+        </div>
+        <span class="check">${checkIcon}</span>
+      `;
+      row.addEventListener('click', () => {
+        state.formato = f.name;
+        refreshUI();
+        closePanel('formato');
+      });
+      panel.appendChild(row);
+    });
+  }
+
+  function buildIdiomaPanel(){
+    const panel = document.getElementById('idiomaPanel');
+    panel.innerHTML = '';
+    IDIOMAS.forEach(i => {
+      const row = document.createElement('div');
+      row.className = 'option-row' + (state.idioma === i.name ? ' selected' : '');
+      row.innerHTML = `
+        <div class="option-main">
+          <span class="option-name">${i.name}</span>
+        </div>
+        <span class="check">${checkIcon}</span>
+      `;
+      row.addEventListener('click', () => {
+        state.idioma = i.name;
+        refreshUI();
+        closePanel('idioma');
+      });
+      panel.appendChild(row);
+    });
+  }
+
+  // ---------- Apertura / cierre de paneles ----------
+
+  const panelRefs = {
+    cine: { btn: document.getElementById('carteleraBtn'), panel: document.getElementById('cinePanel') },
+    formato: { btn: document.getElementById('formatosBtn'), panel: document.getElementById('formatoPanel') },
+    idioma: { btn: document.getElementById('idiomaBtn'), panel: document.getElementById('idiomaPanel') }
+  };
+
+  function closeAllPanels(){
+    Object.keys(panelRefs).forEach(key => closePanel(key));
+  }
+
+  function closePanel(key){
+    panelRefs[key].btn.classList.remove('open');
+    panelRefs[key].panel.classList.remove('open');
+    updateFiltersPanelsWrap();
+  }
+
+  function openPanel(key){
+    const wasOpen = panelRefs[key].panel.classList.contains('open');
+    closeAllPanels();
+    if(!wasOpen){
+      panelRefs[key].btn.classList.add('open');
+      panelRefs[key].panel.classList.add('open');
+    }
+    updateFiltersPanelsWrap();
+  }
+
+  function updateFiltersPanelsWrap(){
+    const wrap = document.getElementById('filtersPanels');
+    const anyOpen = document.getElementById('formatoPanel').classList.contains('open') ||
+                    document.getElementById('idiomaPanel').classList.contains('open');
+    wrap.classList.toggle('any-open', anyOpen);
+  }
+
+  document.getElementById('carteleraBtn').addEventListener('click', () => openPanel('cine'));
+  document.getElementById('formatosBtn').addEventListener('click', () => openPanel('formato'));
+  document.getElementById('idiomaBtn').addEventListener('click', () => openPanel('idioma'));
+
+  // ---------- Refrescar toda la UI segun el estado ----------
+
+  function refreshUI(){
+    buildCinePanel();
+    buildFormatoPanel();
+    buildIdiomaPanel();
+
+    document.getElementById('cinePicked').textContent = state.cine || '';
+    document.getElementById('formatoPicked').textContent = state.formato || '';
+    document.getElementById('idiomaPicked').textContent = state.idioma || '';
+
+    document.getElementById('cineNameDisplay').textContent =
+      state.cine ? state.cine : 'Elegí tu cine para continuar';
+
+    // Disponibilidad de asientos según el formato elegido
+    const activeLevel = state.formato
+      ? FORMATOS.find(f => f.name === state.formato).level
+      : null;
+
+    document.querySelectorAll('.avail-item').forEach(item => {
+      const level = item.getAttribute('data-level');
+      item.classList.remove('dimmed', 'highlighted');
+      if(activeLevel){
+        if(level === activeLevel){
+          item.classList.add('highlighted');
+        } else {
+          item.classList.add('dimmed');
+        }
+      }
+    });
+
+    // Habilitar Continuar solo cuando hay cine, formato e idioma elegidos
+    const continuarBtn = document.getElementById('continuarBtn');
+    continuarBtn.disabled = !(state.cine && state.formato && state.idioma);
+  }
+
+  // ---------- Init ----------
+
+  buildCinePanel();
+  buildFormatoPanel();
+  buildIdiomaPanel();
+  refreshUI();
+
+  // ---------- Vista: elegir butaca ----------
+
+  const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  const SEATS_PER_SIDE = 5; // 5 + pasillo + 5 = 10 butacas por fila
+
+  // Butacas ya ocupadas (fijo, a modo de ejemplo)
+  const OCCUPIED = new Set([
+    "B3", "B4", "C6", "C7", "C8", "D2", "E5", "E6", "F9", "G1", "G2", "H7"
+  ]);
+
+  state.seats = [];
+
+  function buildSeatMap(){
+    const map = document.getElementById('seatMap');
+    map.innerHTML = '';
+
+    ROWS.forEach(letter => {
+      const row = document.createElement('div');
+      row.className = 'seat-row';
+
+      const rowLabel = document.createElement('span');
+      rowLabel.className = 'row-letter';
+      rowLabel.textContent = letter;
+      row.appendChild(rowLabel);
+
+      for(let side = 0; side < 2; side++){
+        for(let i = 1; i <= SEATS_PER_SIDE; i++){
+          const num = side === 0 ? i : SEATS_PER_SIDE + i;
+          const id = `${letter}${num}`;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'seat';
+          btn.dataset.seat = id;
+
+          if(OCCUPIED.has(id)){
+            btn.classList.add('occupied');
+            btn.disabled = true;
+          }
+          if(state.seats.includes(id)){
+            btn.classList.add('selected');
+          }
+
+          btn.addEventListener('click', () => toggleSeat(id));
+          row.appendChild(btn);
+        }
+        if(side === 0){
+          const gap = document.createElement('span');
+          gap.className = 'seat gap';
+          row.appendChild(gap);
+        }
+      }
+
+      map.appendChild(row);
+    });
+  }
+
+  function toggleSeat(id){
+    const idx = state.seats.indexOf(id);
+    if(idx === -1){
+      state.seats.push(id);
+    } else {
+      state.seats.splice(idx, 1);
+    }
+    buildSeatMap();
+    refreshSeatsUI();
+  }
+
+  function refreshSeatsUI(){
+    document.getElementById('seatsPicked').textContent =
+      state.seats.length ? state.seats.sort().join(', ') : 'Ninguna';
+    document.getElementById('continuarButacasBtn').disabled = state.seats.length === 0;
+  }
+
+  function buildSummaryStrip(){
+    const strip = document.getElementById('summaryStrip');
+    strip.innerHTML = `
+      <span class="summary-chip"><b>${state.cine}</b></span>
+      <span class="summary-chip">Formato: <b>${state.formato}</b></span>
+      <span class="summary-chip">Idioma: <b>${state.idioma}</b></span>
+    `;
+  }
+
+  // ---------- Cambio entre vistas ----------
+
+  function goToButacas(){
+    buildSummaryStrip();
+    buildSeatMap();
+    refreshSeatsUI();
+    document.getElementById('viewHorarios').hidden = true;
+    document.getElementById('viewButacas').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function goToHorarios(){
+    document.getElementById('viewButacas').hidden = true;
+    document.getElementById('viewHorarios').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  document.getElementById('continuarBtn').addEventListener('click', () => {
+    if(!document.getElementById('continuarBtn').disabled){
+      goToButacas();
+    }
+  });
+
+  document.getElementById('backBtn').addEventListener('click', goToHorarios);
+
+  document.getElementById('continuarButacasBtn').addEventListener('click', () => {
+    if(!document.getElementById('continuarButacasBtn').disabled){
+      goToSnacks();
+    }
+  });
+
+  // ---------- Vista: snacks ----------
+  // Precios de referencia en base a valores publicados por Cinemark Argentina (candy bar);
+  // pueden variar según el complejo y la fecha.
+
+  const COMBOS = [
+    { id: "combo_chico", icon: "🍿", name: "Combo Chico", desc: "Bolsa de pochoclos + gaseosa chica", price: 12900 },
+    { id: "combo_mediano", icon: "🍿", name: "Combo Mediano", desc: "Balde de pochoclos + gaseosa mediana", price: 17900 },
+    { id: "combo_mega", icon: "🍿", name: "Combo Mega", desc: "Balde grande de pochoclos + gaseosa grande + golosina", price: 22900 },
+    { id: "combo_nachos", icon: "🧀", name: "Combo Nachos", desc: "Nachos con queso + vaso reutilizable con gaseosa", price: 26900 }
+  ];
+
+  const INDIVIDUALES = [
+    { id: "pochoclos_bolsa", icon: "🍿", name: "Pochoclos (bolsa)", desc: "Dulces o salados", price: 7700 },
+    { id: "pochoclos_balde", icon: "🍿", name: "Pochoclos (balde)", desc: "Dulces o salados", price: 9300 },
+    { id: "gaseosa", icon: "🥤", name: "Gaseosa", desc: "Línea Coca-Cola, tamaño grande", price: 4500 },
+    { id: "agua", icon: "💧", name: "Agua mineral", desc: "500 ml", price: 3800 }
+  ];
+
+  const ALL_SNACKS = [...COMBOS, ...INDIVIDUALES];
+
+  state.snacks = {}; // { id: cantidad }
+
+  function currency(n){
+    return '$' + n.toLocaleString('es-AR');
+  }
+
+  function buildSnackCard(item){
+    const card = document.createElement('div');
+    const qty = state.snacks[item.id] || 0;
+    card.className = 'snack-card' + (qty > 0 ? ' active' : '');
+    card.innerHTML = `
+      <div class="snack-icon">${item.icon}</div>
+      <div class="snack-info">
+        <div class="snack-name">${item.name}</div>
+        <div class="snack-desc">${item.desc}</div>
+        <div class="snack-price">${currency(item.price)}</div>
+      </div>
+      <div class="qty-stepper">
+        <button type="button" class="qty-btn minus" ${qty === 0 ? 'disabled' : ''}>–</button>
+        <span class="qty-value">${qty}</span>
+        <button type="button" class="qty-btn plus">+</button>
+      </div>
+    `;
+    card.querySelector('.minus').addEventListener('click', () => changeQty(item.id, -1));
+    card.querySelector('.plus').addEventListener('click', () => changeQty(item.id, 1));
+    return card;
+  }
+
+  function buildSnacksLists(){
+    const combosWrap = document.getElementById('snackCombos');
+    const indWrap = document.getElementById('snackIndividuales');
+    combosWrap.innerHTML = '';
+    indWrap.innerHTML = '';
+    COMBOS.forEach(item => combosWrap.appendChild(buildSnackCard(item)));
+    INDIVIDUALES.forEach(item => indWrap.appendChild(buildSnackCard(item)));
+  }
+
+  function changeQty(id, delta){
+    const current = state.snacks[id] || 0;
+    const next = Math.max(0, current + delta);
+    if(next === 0){
+      delete state.snacks[id];
+    } else {
+      state.snacks[id] = next;
+    }
+    buildSnacksLists();
+    refreshSnacksTotal();
+  }
+
+  function refreshSnacksTotal(){
+    let total = 0;
+    Object.keys(state.snacks).forEach(id => {
+      const item = ALL_SNACKS.find(s => s.id === id);
+      total += item.price * state.snacks[id];
+    });
+    document.getElementById('snacksTotal').textContent = currency(total);
+  }
+
+  function goToSnacks(){
+    buildSnacksLists();
+    refreshSnacksTotal();
+    document.getElementById('viewButacas').hidden = true;
+    document.getElementById('viewSnacks').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function goToButacasFromSnacks(){
+    document.getElementById('viewSnacks').hidden = true;
+    document.getElementById('viewButacas').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  document.getElementById('backBtnSnacks').addEventListener('click', goToButacasFromSnacks);
+
+  document.getElementById('skipSnacksBtn').addEventListener('click', () => {
+    state.snacks = {};
+    buildSnacksLists();
+    refreshSnacksTotal();
+    goToPago();
+  });
+
+  document.getElementById('continuarSnacksBtn').addEventListener('click', () => {
+    goToPago();
+  });
+
+  // ---------- Vista: pago ----------
+
+  const PAY_METHODS = {
+    tarjeta: () => `
+      <div class="pay-form">
+        <div class="field">
+          <label>Nombre y apellido</label>
+          <input type="text" placeholder="Como figura en la tarjeta">
+        </div>
+        <div class="field">
+          <label>Número de tarjeta</label>
+          <input type="text" placeholder="0000 0000 0000 0000" maxlength="19">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Vencimiento</label>
+            <input type="text" placeholder="MM/AA" maxlength="5">
+          </div>
+          <div class="field">
+            <label>CVV</label>
+            <input type="text" placeholder="123" maxlength="4">
+          </div>
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <select>
+            <option>Débito</option>
+            <option>Crédito</option>
+          </select>
+        </div>
+      </div>
+    `,
+    mercadopago: () => `
+      <div class="pay-form">
+        <div class="field">
+          <label>Email o teléfono asociado a Mercado Pago</label>
+          <input type="text" placeholder="tucorreo@email.com">
+        </div>
+        <p class="pay-note">Vas a confirmar el pago desde tu cuenta de <strong>Mercado Pago</strong>.</p>
+      </div>
+    `,
+    efectivo: () => `
+      <div class="pay-form">
+        <p class="pay-note">Pagás en <strong>efectivo</strong> al retirar tus entradas en boletería. Te reservamos la compra por 30 minutos.</p>
+      </div>
+    `
+  };
+
+  function selectPayMethod(method){
+    state.metodoPago = method;
+    document.querySelectorAll('.pay-method').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.method === method);
+    });
+    document.getElementById('payFormWrap').innerHTML = PAY_METHODS[method]();
+    document.getElementById('confirmarCompraBtn').disabled = false;
+  }
+
+  document.querySelectorAll('.pay-method').forEach(btn => {
+    btn.addEventListener('click', () => selectPayMethod(btn.dataset.method));
+  });
+
+  function buildOrderSummary(){
+    const wrap = document.getElementById('orderLines');
+    const formato = FORMATOS.find(f => f.name === state.formato);
+    const entradasTotal = formato.price * state.seats.length;
+
+    let snacksTotal = 0;
+    const snackLines = Object.keys(state.snacks).map(id => {
+      const item = ALL_SNACKS.find(s => s.id === id);
+      const qty = state.snacks[id];
+      const subtotal = item.price * qty;
+      snacksTotal += subtotal;
+      return `<div class="order-line"><span class="oname">${qty}x ${item.name}</span><span class="ovalue">${currency(subtotal)}</span></div>`;
+    }).join('');
+
+    wrap.innerHTML = `
+      <div class="order-line"><span class="oname">Cine</span><span class="ovalue">${state.cine}</span></div>
+      <div class="order-line"><span class="oname">Función</span><span class="ovalue">${state.formato} · ${state.idioma}</span></div>
+      <div class="order-line"><span class="oname">Butacas (${state.seats.length})</span><span class="ovalue">${state.seats.slice().sort().join(', ')}</span></div>
+      <div class="order-line subtotal-only"><span class="oname">Entradas</span><span class="ovalue">${currency(entradasTotal)}</span></div>
+      ${snackLines || '<div class="order-line"><span class="oname">Snacks</span><span class="ovalue">Sin snacks</span></div>'}
+    `;
+
+    state.entradasTotal = entradasTotal;
+    state.snacksTotal = snacksTotal;
+    state.total = entradasTotal + snacksTotal;
+
+    document.getElementById('orderTotal').textContent = currency(state.total);
+  }
+
+  function goToPago(){
+    buildOrderSummary();
+    document.getElementById('payFormWrap').innerHTML = '';
+    document.getElementById('confirmarCompraBtn').disabled = true;
+    document.querySelectorAll('.pay-method').forEach(btn => btn.classList.remove('selected'));
+    state.metodoPago = null;
+    document.getElementById('viewSnacks').hidden = true;
+    document.getElementById('viewPago').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function goToSnacksFromPago(){
+    document.getElementById('viewPago').hidden = true;
+    document.getElementById('viewSnacks').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  document.getElementById('backBtnPago').addEventListener('click', goToSnacksFromPago);
+
+  // ---------- Confirmación de compra (overlay) ----------
+
+  function showOverlay(){
+    document.getElementById('overlayConfirmacion').classList.add('show');
+  }
+
+  function hideOverlay(){
+    document.getElementById('overlayConfirmacion').classList.remove('show');
+  }
+
+  document.getElementById('confirmarCompraBtn').addEventListener('click', () => {
+    if(!document.getElementById('confirmarCompraBtn').disabled){
+      // Genera un numero de orden simple para la factura, solo a modo de ejemplo
+      state.orderId = 'CF-' + Math.floor(100000 + Math.random() * 900000);
+      state.orderDate = new Date();
+      showOverlay();
+    }
+  });
+
+  // ---------- Vista: factura ----------
+
+  const METODO_LABEL = {
+    tarjeta: "Tarjeta",
+    mercadopago: "Mercado Pago",
+    efectivo: "Efectivo"
+  };
+
+  function buildReceipt(){
+    const content = document.getElementById('receiptContent');
+    const fecha = state.orderDate.toLocaleDateString('es-AR');
+    const hora = state.orderDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+    const snackRows = Object.keys(state.snacks).map(id => {
+      const item = ALL_SNACKS.find(s => s.id === id);
+      const qty = state.snacks[id];
+      return `<div class="receipt-row"><span class="rname">${qty}x ${item.name}</span><span>${currency(item.price * qty)}</span></div>`;
+    }).join('');
+
+    content.innerHTML = `
+      <div class="receipt-head">
+        <div class="brand">CINE<span class="accent">TICKET</span></div>
+        <div class="meta">Orden ${state.orderId} · ${fecha} ${hora}hs</div>
+      </div>
+
+      <div class="receipt-section">
+        <p class="receipt-label">Cine</p>
+        <div class="receipt-row"><span class="rname">Complejo</span><span>${state.cine}</span></div>
+        <div class="receipt-row"><span class="rname">Función</span><span>${state.formato} · ${state.idioma}</span></div>
+        <div class="receipt-row"><span class="rname">Butacas</span><span>${state.seats.slice().sort().join(', ')}</span></div>
+      </div>
+
+      <div class="receipt-section">
+        <p class="receipt-label">Detalle</p>
+        <div class="receipt-row"><span class="rname">Entradas (${state.seats.length})</span><span>${currency(state.entradasTotal)}</span></div>
+        ${snackRows || '<div class="receipt-row"><span class="rname">Snacks</span><span>—</span></div>'}
+      </div>
+
+      <div class="receipt-section">
+        <p class="receipt-label">Pago</p>
+        <div class="receipt-row"><span class="rname">Método</span><span>${METODO_LABEL[state.metodoPago]}</span></div>
+      </div>
+
+      <div class="receipt-total">
+        <span class="label">Total pagado</span>
+        <span class="amount">${currency(state.total)}</span>
+      </div>
+
+      <div class="receipt-thanks">Gracias por tu compra. Disfrutá la función 🎬</div>
+    `;
+  }
+
+  document.getElementById('verFacturaBtn').addEventListener('click', () => {
+    hideOverlay();
+    buildReceipt();
+    document.getElementById('viewPago').hidden = true;
+    document.getElementById('viewFactura').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
+
+  document.getElementById('volverInicioBtn').addEventListener('click', () => {
+    // Reinicia el estado para empezar una nueva compra
+    state.cine = null;
+    state.formato = null;
+    state.idioma = null;
+    state.seats = [];
+    state.snacks = {};
+    state.metodoPago = null;
+    refreshUI();
+    document.getElementById('viewFactura').hidden = true;
+    document.getElementById('viewHorarios').hidden = false;
+    // Vuelve a la home de TicketCine
+    document.getElementById('horarios-app').hidden = true;
+    document.getElementById('ticketcine-home').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });

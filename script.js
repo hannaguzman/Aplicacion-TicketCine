@@ -261,6 +261,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     playerOverlay.classList.add('active');
     playerOverlay.setAttribute('aria-hidden','false');
 
+    if(typeof window.__logActivity === 'function') window.__logActivity('trailer', `Viste el tráiler de "${movie.title}"`);
+
     // focus management for accessibility: move focus to close button
     setTimeout(()=>{ if(playerClose) playerClose.focus(); }, 60);
 
@@ -289,6 +291,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(!selectedSchedule) return;
     closePlayer();
     document.getElementById('ticketcine-home').hidden = true;
+    const clipsAppEl = document.getElementById('clips-app');
+    if(clipsAppEl && !clipsAppEl.hidden && typeof window.__pauseClips === 'function') window.__pauseClips();
+    if(clipsAppEl) clipsAppEl.hidden = true;
+    const searchAppEl = document.getElementById('search-app');
+    if(searchAppEl) searchAppEl.hidden = true;
     document.getElementById('horarios-app').hidden = false;
     window.scrollTo({ top: 0, behavior: 'instant' });
   });
@@ -370,7 +377,310 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Quick buy
   const quick = document.getElementById('quick-buy'); if(quick) quick.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
 
+  // --- Barra de navegación inferior: Inicio / Clips / Buscar ---
+  const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+  bottomNavItems.forEach(btn => {
+    btn.addEventListener('click', () => {
+      bottomNavItems.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if(btn.dataset.section === 'inicio'){
+        const horariosApp = document.getElementById('horarios-app');
+        const clipsApp = document.getElementById('clips-app');
+        const searchApp = document.getElementById('search-app');
+        const home = document.getElementById('ticketcine-home');
+        if(horariosApp) horariosApp.hidden = true;
+        if(clipsApp && !clipsApp.hidden && typeof window.__pauseClips === 'function') window.__pauseClips();
+        if(clipsApp) clipsApp.hidden = true;
+        if(searchApp) searchApp.hidden = true;
+        if(home) home.hidden = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      // 'buscar' se conecta más abajo, en el módulo de Búsqueda
+    });
+  });
+
+  // Se exponen para que el módulo de Búsqueda abra el mismo modal
+  // de tráiler + horarios que usan el carrusel y la cartelera.
+  window.__allMovies = [...slides, ...posters];
+  window.__openMoviePlayer = openPlayer;
+
 });
+
+// ============================================================
+// Clips: adelantos en formato vertical (estilo Reels)
+// ============================================================
+(function(){
+  const CLIP_VIDEOS = [
+    { title: "Spider-Man: Brand New Day", id: "i6OfBlm8lRM" },
+    { title: "La Odisea", id: "6T7SJntyEs4" },
+    { title: "La muerte de Robin Hood", id: "0oBUb0M-O3U" },
+    { title: "Coyote vs. Acme", id: "ATviRowohkg" },
+    { title: "Backrooms", id: "5QTbL5Mi28M" },
+    { title: "El final de Oak Street", id: "f-O7HrsHoP8" },
+    { title: "Tu corazón se romperá", id: "b9_SNkZj3OE" },
+    { title: "Insidious: Fuera del más allá", id: "gsDjAFfoQN4" },
+    { title: "Engendro", id: "0AIZJh2DBak" },
+    { title: "Adolescencia, sexo y muerte en campamento Miasma", id: "j9TsiTgYZGw" },
+    { title: "Tiempo de victoria", id: "MQq8Zpf-6bI" },
+    { title: "El árbol muy muy lejano", id: "9DqKisDbc2w" },
+    { title: "Nimrods: A Green Day Comedy", id: "1HgB3l-wEoo" },
+    { title: "Esa cosa con alas", id: "VCb1HW7DLR0" },
+    { title: "Yo, narciso", id: "0M3Z0Nvyjh0" },
+  ];
+
+  const clipsApp = document.getElementById('clips-app');
+  const clipsFeed = document.getElementById('clips-feed');
+  const clipsBackBtn = document.getElementById('clipsBackBtn');
+  if(!clipsApp || !clipsFeed) return;
+
+  let clipsMuted = true;
+  let clipsBuilt = false;
+
+  function clipYtSrc(id){
+    return `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${id}&mute=1`;
+  }
+
+  function clipPostCmd(iframe, func, args){
+    if(!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(JSON.stringify({event:'command', func, args: args || []}), '*');
+  }
+
+  function clipPanels(){
+    return Array.from(clipsFeed.querySelectorAll('.clip-panel'));
+  }
+
+  function closestClipPanel(){
+    const list = clipPanels();
+    const feedTop = clipsFeed.scrollTop;
+    let closest = list[0];
+    let closestDist = Infinity;
+    list.forEach(p => {
+      const dist = Math.abs(p.offsetTop - feedTop);
+      if(dist < closestDist){ closestDist = dist; closest = p; }
+    });
+    return closest;
+  }
+
+  function buildClipsFeed(){
+    if(clipsBuilt) return;
+    clipsBuilt = true;
+
+    CLIP_VIDEOS.forEach((v, i) => {
+      const panel = document.createElement('div');
+      panel.className = 'clip-panel';
+      panel.dataset.index = i;
+
+      panel.innerHTML = `
+        <div class="video-wrap">
+          <iframe data-idx="${i}" src="${clipYtSrc(v.id)}"
+            allow="autoplay; encrypted-media" title="${v.title}"></iframe>
+        </div>
+        <div class="scrim"></div>
+        <div class="clip-brand">TICKET CINE</div>
+        <button class="sound-btn" aria-label="Sonido">${i===0 ? '🔇' : '🔈'}</button>
+        <div class="rail">${CLIP_VIDEOS.map((_, j) => `<div class="perf ${j===i?'active':''}"></div>`).join('')}</div>
+        <div class="info">
+          <div class="eyebrow"><span class="dot"></span>ADELANTO</div>
+          <h1 class="clip-title">${v.title}</h1>
+          <div class="cta-row">
+            <button class="btn primary">Ver funciones</button>
+            <button class="btn">+ Info</button>
+          </div>
+        </div>
+      `;
+
+      panel.querySelector('.sound-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        clipsMuted = !clipsMuted;
+        clipsFeed.querySelectorAll('.sound-btn').forEach(b => b.textContent = clipsMuted ? '🔇' : '🔈');
+        clipPostCmd(panel.querySelector('iframe'), clipsMuted ? 'mute' : 'unMute');
+      });
+
+      clipsFeed.appendChild(panel);
+    });
+
+    // Reproduce el panel visible, pausa el resto
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const iframe = entry.target.querySelector('iframe');
+        if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+          clipPostCmd(iframe, 'playVideo');
+        } else {
+          clipPostCmd(iframe, 'pauseVideo');
+        }
+      });
+    }, { root: clipsFeed, threshold: [0, 0.6, 1] });
+
+    clipPanels().forEach(p => observer.observe(p));
+  }
+
+  function pauseAllClips(){
+    clipsFeed.querySelectorAll('iframe').forEach(iframe => clipPostCmd(iframe, 'pauseVideo'));
+  }
+  // Usado desde el botón "Inicio" de la barra inferior para cortar el audio si venís de Clips
+  window.__pauseClips = pauseAllClips;
+
+  function playCurrentClip(){
+    const panel = closestClipPanel();
+    if(!panel) return;
+    setTimeout(() => clipPostCmd(panel.querySelector('iframe'), 'playVideo'), 300);
+  }
+
+  function showClips(){
+    buildClipsFeed();
+    const home = document.getElementById('ticketcine-home');
+    const horariosApp = document.getElementById('horarios-app');
+    const searchApp = document.getElementById('search-app');
+    if(home) home.hidden = true;
+    if(horariosApp) horariosApp.hidden = true;
+    if(searchApp) searchApp.hidden = true;
+    clipsApp.hidden = false;
+    playCurrentClip();
+  }
+
+  function hideClips(){
+    pauseAllClips();
+    clipsApp.hidden = true;
+    const home = document.getElementById('ticketcine-home');
+    if(home) home.hidden = false;
+    document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+    const inicioBtn = document.querySelector('.bottom-nav-item[data-section="inicio"]');
+    if(inicioBtn) inicioBtn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  if(clipsBackBtn) clipsBackBtn.addEventListener('click', hideClips);
+
+  const clipsNavBtn = document.querySelector('.bottom-nav-item[data-section="clips"]');
+  if(clipsNavBtn) clipsNavBtn.addEventListener('click', showClips);
+
+  // Navegación con flechas del teclado, solo mientras Clips está visible
+  window.addEventListener('keydown', (e) => {
+    if(clipsApp.hidden) return;
+    if(e.key === 'Escape'){ hideClips(); return; }
+    if(e.key !== 'ArrowDown' && e.key !== 'PageDown' && e.key !== 'ArrowUp' && e.key !== 'PageUp') return;
+    e.preventDefault();
+    const list = clipPanels();
+    const current = closestClipPanel();
+    const idx = list.indexOf(current);
+    const dir = (e.key === 'ArrowDown' || e.key === 'PageDown') ? 1 : -1;
+    const target = list[Math.max(0, Math.min(list.length - 1, idx + dir))];
+    if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+
+// ============================================================
+// Buscar: sugiere películas a medida que el usuario escribe,
+// reutilizando el mismo modal de tráiler + horarios de la home.
+// ============================================================
+(function(){
+  // Películas que no están en el carrusel/cartelera de la home
+  // (se usan igual, con la misma imagen y, cuando hay, el mismo
+  // trailerId que ya usamos en Clips).
+  const SEARCH_EXTRA_MOVIES = [
+    { title: "Tu corazón se romperá", img: "https://image.tmdb.org/t/p/w500/siSnG1h8JKkuHgM0RuOWLcNxSbz.jpg", trailerId: "b9_SNkZj3OE" },
+    { title: "Insidious: Fuera del más allá", img: "https://image.tmdb.org/t/p/w500/peE3VhpRbIW9VtW2SRaf893JMzJ.jpg", trailerId: "gsDjAFfoQN4" },
+    { title: "Nimrods: A Green Day Comedy", img: "https://image.tmdb.org/t/p/w500/aebmSpFu1lUV78PtOpqMUn4d82B.jpg", trailerId: "1HgB3l-wEoo" },
+    { title: "Esa cosa con alas", img: "https://image.tmdb.org/t/p/w500/aaoS7XEWnKeQCa3EqWAXC803hlg.jpg", trailerId: "VCb1HW7DLR0" },
+    { title: "Yo, narciso", img: "https://image.tmdb.org/t/p/w500/3qe9gaT7jpKVJJ6UtM9Pr5jm3Hq.jpg", trailerId: "0M3Z0Nvyjh0" },
+    { title: "Canelones", img: "https://image.tmdb.org/t/p/w500/s2g8wLNs6G5XYa5ivfUNuWbQTKQ.jpg" },
+  ];
+
+  const searchApp = document.getElementById('search-app');
+  const searchInput = document.getElementById('searchInput');
+  const searchResults = document.getElementById('searchResults');
+  const searchBackBtn = document.getElementById('searchBackBtn');
+  const searchClearBtn = document.getElementById('searchClearBtn');
+  if(!searchApp || !searchInput || !searchResults) return;
+
+  function getAllMovies(){
+    const base = Array.isArray(window.__allMovies) ? window.__allMovies : [];
+    return base.concat(SEARCH_EXTRA_MOVIES);
+  }
+
+  function renderResults(query){
+    const movies = getAllMovies();
+    const q = query.trim().toLowerCase();
+    const filtered = q ? movies.filter(m => m.title.toLowerCase().includes(q)) : movies;
+
+    searchResults.innerHTML = '';
+    if(searchClearBtn) searchClearBtn.hidden = q.length === 0;
+
+    if(filtered.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'search-empty';
+      empty.textContent = 'No encontramos ninguna película con ese nombre.';
+      searchResults.appendChild(empty);
+      return;
+    }
+
+    filtered.forEach(movie => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'search-result';
+
+      const img = document.createElement('img');
+      img.src = movie.img;
+      img.alt = movie.title;
+      img.loading = 'lazy';
+      card.appendChild(img);
+
+      const title = document.createElement('div');
+      title.className = 'search-result-title';
+      title.textContent = movie.title;
+      card.appendChild(title);
+
+      // Mismo protocolo que las películas de la home: abre el
+      // modal de tráiler + horarios con la misma función.
+      card.addEventListener('click', () => {
+        if(typeof window.__openMoviePlayer === 'function') window.__openMoviePlayer(movie, card);
+      });
+
+      searchResults.appendChild(card);
+    });
+  }
+
+  searchInput.addEventListener('input', () => renderResults(searchInput.value));
+
+  if(searchClearBtn) searchClearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    renderResults('');
+    searchInput.focus();
+  });
+
+  function showSearch(){
+    const home = document.getElementById('ticketcine-home');
+    const horariosApp = document.getElementById('horarios-app');
+    const clipsApp = document.getElementById('clips-app');
+    if(home) home.hidden = true;
+    if(horariosApp) horariosApp.hidden = true;
+    if(clipsApp && !clipsApp.hidden && typeof window.__pauseClips === 'function') window.__pauseClips();
+    if(clipsApp) clipsApp.hidden = true;
+    searchApp.hidden = false;
+    renderResults(searchInput.value);
+    setTimeout(() => searchInput.focus(), 50);
+  }
+
+  function hideSearch(){
+    searchApp.hidden = true;
+    const home = document.getElementById('ticketcine-home');
+    if(home) home.hidden = false;
+    document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+    const inicioBtn = document.querySelector('.bottom-nav-item[data-section="inicio"]');
+    if(inicioBtn) inicioBtn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  if(searchBackBtn) searchBackBtn.addEventListener('click', hideSearch);
+
+  const searchNavBtn = document.querySelector('.bottom-nav-item[data-section="buscar"]');
+  if(searchNavBtn) searchNavBtn.addEventListener('click', showSearch);
+
+  window.addEventListener('keydown', (e) => {
+    if(searchApp.hidden) return;
+    if(e.key === 'Escape') hideSearch();
+  });
+})();
 
 
 // ============================================================
@@ -906,6 +1216,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       // Genera un numero de orden simple para la factura, solo a modo de ejemplo
       state.orderId = 'CF-' + Math.floor(100000 + Math.random() * 900000);
       state.orderDate = new Date();
+      if(typeof window.__logActivity === 'function'){
+        window.__logActivity('compra', `Compraste ${state.seats.length} entrada(s) en ${state.cine} · Orden ${state.orderId}`);
+      }
       showOverlay();
     }
   });
@@ -983,6 +1296,590 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('viewHorarios').hidden = false;
     // Vuelve a la home de TicketCine
     document.getElementById('horarios-app').hidden = true;
+    const searchAppEl = document.getElementById('search-app');
+    if(searchAppEl) searchAppEl.hidden = true;
     document.getElementById('ticketcine-home').hidden = false;
+    document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+    const inicioBtn = document.querySelector('.bottom-nav-item[data-section="inicio"]');
+    if(inicioBtn) inicioBtn.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'instant' });
   });
+
+// ============================================================
+// Cuenta de usuario: iniciar sesión / crear cuenta / perfil
+// Menú lateral: navegación, configuración, ayuda, historial
+// Todo se guarda en localStorage (no hay backend real).
+// ============================================================
+(function(){
+
+  // ---------- Utilidades de guardado ----------
+  function readJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function writeJSON(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ /* almacenamiento no disponible */ }
+  }
+
+  function getUsers(){ return readJSON('tc_users', []); }
+  function saveUsers(list){ writeJSON('tc_users', list); }
+  function getSession(){ return readJSON('tc_session', null); }
+  function setSession(email){ writeJSON('tc_session', email); }
+  function clearSession(){ try{ localStorage.removeItem('tc_session'); }catch(e){} }
+
+  // ---------- Historial de actividad ----------
+  function logActivity(type, label){
+    const list = readJSON('tc_activity', []);
+    list.unshift({ type, label, date: new Date().toISOString() });
+    writeJSON('tc_activity', list.slice(0, 40));
+  }
+  window.__logActivity = logActivity;
+
+  function formatActivityDate(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-AR') + ' · ' + d.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ============================================================
+  // Modal de Cuenta
+  // ============================================================
+  const AVATAR_OPTIONS = ['🎬','🍿','🎟️','🎭','👻','⭐','📽️','🛸'];
+
+  const userOverlay = document.getElementById('userOverlay');
+  const userBackdrop = document.getElementById('userBackdrop');
+  const userCloseBtn = document.getElementById('userCloseBtn');
+  const userBtn = document.getElementById('userBtn');
+
+  const viewLogin = document.getElementById('userViewLogin');
+  const viewRegister = document.getElementById('userViewRegister');
+  const viewProfile = document.getElementById('userViewProfile');
+
+  let selectedAvatar = AVATAR_OPTIONS[0];
+
+  function showUserView(view){
+    [viewLogin, viewRegister, viewProfile].forEach(v => { if(v) v.hidden = (v !== view); });
+  }
+
+  function openUserOverlay(){
+    if(!userOverlay) return;
+    const session = getSession();
+    if(session){
+      const users = getUsers();
+      const u = users.find(x => x.email === session);
+      if(u) renderProfile(u);
+      showUserView(viewProfile);
+    } else {
+      showUserView(viewLogin);
+    }
+    userOverlay.classList.add('active');
+  }
+  function closeUserOverlay(){
+    if(userOverlay) userOverlay.classList.remove('active');
+  }
+
+  if(userBtn) userBtn.addEventListener('click', openUserOverlay);
+  if(userCloseBtn) userCloseBtn.addEventListener('click', closeUserOverlay);
+  if(userBackdrop) userBackdrop.addEventListener('click', closeUserOverlay);
+
+  // Mostrar/ocultar contraseña
+  document.querySelectorAll('.user-eye').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if(!target) return;
+      target.type = target.type === 'password' ? 'text' : 'password';
+    });
+  });
+
+  // ---------- Avatar ----------
+  const avatarOptionsEl = document.getElementById('avatarOptions');
+  const avatarPreviewEl = document.getElementById('avatarPreview');
+  if(avatarOptionsEl){
+    AVATAR_OPTIONS.forEach((emoji, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'avatar-option' + (i === 0 ? ' selected' : '');
+      b.textContent = emoji;
+      b.addEventListener('click', () => {
+        selectedAvatar = emoji;
+        if(avatarPreviewEl) avatarPreviewEl.textContent = emoji;
+        avatarOptionsEl.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+        b.classList.add('selected');
+      });
+      avatarOptionsEl.appendChild(b);
+    });
+  }
+
+  // ---------- Complejo de preferencia (reusa CINES de Horarios) ----------
+  const regComplejo = document.getElementById('regComplejo');
+  if(regComplejo && typeof CINES !== 'undefined'){
+    CINES.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.nombre || c.name || c;
+      opt.textContent = c.nombre || c.name || c;
+      regComplejo.appendChild(opt);
+    });
+  }
+
+  // ---------- Login ----------
+  const goRegisterBtn = document.getElementById('goRegisterBtn');
+  const backToLoginBtn = document.getElementById('backToLoginBtn');
+  const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+  const loginError = document.getElementById('loginError');
+
+  if(goRegisterBtn) goRegisterBtn.addEventListener('click', () => showUserView(viewRegister));
+  if(backToLoginBtn) backToLoginBtn.addEventListener('click', () => showUserView(viewLogin));
+
+  const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+  if(forgotPasswordBtn) forgotPasswordBtn.addEventListener('click', () => {
+    if(loginError){ loginError.textContent = 'Es una demo: no enviamos correos reales. Si te registraste acá, tu contraseña quedó guardada en este navegador.'; loginError.hidden = false; }
+  });
+
+  if(loginSubmitBtn) loginSubmitBtn.addEventListener('click', () => {
+    const email = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
+    const pass = document.getElementById('loginPassword').value || '';
+    if(loginError) loginError.hidden = true;
+
+    if(!email || !pass){
+      if(loginError){ loginError.textContent = 'Completá tu correo y contraseña.'; loginError.hidden = false; }
+      return;
+    }
+    const users = getUsers();
+    const user = users.find(u => u.email === email);
+    if(!user || user.password !== pass){
+      if(loginError){ loginError.textContent = 'Correo o contraseña incorrectos.'; loginError.hidden = false; }
+      return;
+    }
+    setSession(user.email);
+    logActivity('sesion', 'Iniciaste sesión');
+    renderProfile(user);
+    showUserView(viewProfile);
+    updateUserButton();
+  });
+
+  // ---------- Registro ----------
+  const registerSubmitBtn = document.getElementById('registerSubmitBtn');
+  const registerError = document.getElementById('registerError');
+
+  if(registerSubmitBtn) registerSubmitBtn.addEventListener('click', () => {
+    const nombre = document.getElementById('regNombre').value.trim();
+    const apellido = document.getElementById('regApellido').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const nacimiento = document.getElementById('regNacimiento').value;
+    const telefono = document.getElementById('regTelefono').value.trim();
+    const complejo = document.getElementById('regComplejo').value;
+    const genero = document.getElementById('regGenero').value;
+    const pass = document.getElementById('regPassword').value;
+    const passConfirm = document.getElementById('regPasswordConfirm').value;
+    const terms = document.getElementById('regTerms').checked;
+
+    if(registerError) registerError.hidden = true;
+
+    if(!nombre || !apellido || !email || !nacimiento || !telefono || !complejo || !genero || !pass || !passConfirm){
+      if(registerError){ registerError.textContent = 'Completá todos los campos obligatorios.'; registerError.hidden = false; }
+      return;
+    }
+    if(pass !== passConfirm){
+      if(registerError){ registerError.textContent = 'Las contraseñas no coinciden.'; registerError.hidden = false; }
+      return;
+    }
+    if(pass.length < 6){
+      if(registerError){ registerError.textContent = 'La contraseña debe tener al menos 6 caracteres.'; registerError.hidden = false; }
+      return;
+    }
+    if(!terms){
+      if(registerError){ registerError.textContent = 'Tenés que aceptar los Términos y Condiciones.'; registerError.hidden = false; }
+      return;
+    }
+
+    const users = getUsers();
+    if(users.some(u => u.email === email)){
+      if(registerError){ registerError.textContent = 'Ya existe una cuenta con ese correo.'; registerError.hidden = false; }
+      return;
+    }
+
+    const newUser = { nombre, apellido, email, nacimiento, telefono, complejo, genero, pass, password: pass, avatar: selectedAvatar };
+    users.push(newUser);
+    saveUsers(users);
+    setSession(email);
+    logActivity('cuenta', 'Creaste tu cuenta en TicketCine');
+
+    renderProfile(newUser);
+    showUserView(viewProfile);
+    updateUserButton();
+  });
+
+  // ---------- Perfil / logout ----------
+  function renderProfile(user){
+    const avatarEl = document.getElementById('profileAvatar');
+    const nameEl = document.getElementById('profileName');
+    const emailEl = document.getElementById('profileEmail');
+    if(avatarEl) avatarEl.textContent = user.avatar || '🎬';
+    if(nameEl) nameEl.textContent = `${user.nombre || ''} ${user.apellido || ''}`.trim() || user.email;
+    if(emailEl) emailEl.textContent = user.email;
+  }
+
+  function updateUserButton(){
+    if(!userBtn) return;
+    const session = getSession();
+    if(session){
+      const users = getUsers();
+      const u = users.find(x => x.email === session);
+      userBtn.textContent = (u && u.avatar) ? u.avatar : '👤';
+    } else {
+      userBtn.textContent = '👤';
+    }
+  }
+  updateUserButton();
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(logoutBtn) logoutBtn.addEventListener('click', () => {
+    clearSession();
+    logActivity('sesion', 'Cerraste sesión');
+    updateUserButton();
+    showUserView(viewLogin);
+  });
+
+  // ============================================================
+  // Menú lateral (hamburguesa)
+  // ============================================================
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sideDrawerOverlay = document.getElementById('sideDrawerOverlay');
+  const sideDrawerBackdrop = document.getElementById('sideDrawerBackdrop');
+  const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+
+  function openDrawer(){ if(sideDrawerOverlay) sideDrawerOverlay.classList.add('active'); }
+  function closeDrawer(){ if(sideDrawerOverlay) sideDrawerOverlay.classList.remove('active'); }
+
+  if(hamburgerBtn) hamburgerBtn.addEventListener('click', openDrawer);
+  if(drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeDrawer);
+  if(sideDrawerBackdrop) sideDrawerBackdrop.addEventListener('click', closeDrawer);
+
+  // Navegación principal del drawer: reusa los mismos botones de la barra inferior
+  document.querySelectorAll('.drawer-item[data-drawer-nav]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      closeDrawer();
+      const section = btn.dataset.drawerNav;
+      const navBtn = document.querySelector(`.bottom-nav-item[data-section="${section}"]`);
+      if(navBtn) navBtn.click();
+    });
+  });
+
+  // ---------- Paneles genéricos (Configuración / Ayuda / Historial) ----------
+  function openPanel(id){
+    closeDrawer();
+    const panel = document.getElementById(id);
+    if(panel) panel.classList.add('active');
+  }
+  function closePanel(id){
+    const panel = document.getElementById(id);
+    if(panel) panel.classList.remove('active');
+  }
+  document.querySelectorAll('[data-close-panel]').forEach(el => {
+    el.addEventListener('click', () => closePanel(el.dataset.closePanel));
+  });
+
+  const drawerSettingsBtn = document.getElementById('drawerSettingsBtn');
+  const drawerHelpBtn = document.getElementById('drawerHelpBtn');
+  const drawerHistoryBtn = document.getElementById('drawerHistoryBtn');
+
+  if(drawerSettingsBtn) drawerSettingsBtn.addEventListener('click', () => openPanel('settingsPanel'));
+  if(drawerHelpBtn) drawerHelpBtn.addEventListener('click', () => { openPanel('helpPanel'); buildFAQ(); });
+  if(drawerHistoryBtn) drawerHistoryBtn.addEventListener('click', () => { openPanel('historyPanel'); buildHistory(); });
+
+  // ---------- Configuración ----------
+  const settingLang = document.getElementById('settingLang');
+  const settingDarkMode = document.getElementById('settingDarkMode');
+  const settingNotifications = document.getElementById('settingNotifications');
+  const settingStatus = document.getElementById('settingStatus');
+
+  if(settingLang){
+    settingLang.value = readJSON('tc_lang', 'es');
+    settingLang.addEventListener('change', () => {
+      writeJSON('tc_lang', settingLang.value);
+      if(settingStatus) settingStatus.textContent = settingLang.value === 'es'
+        ? 'Preferencia guardada. Por ahora el contenido del sitio sigue en Español.'
+        : 'Preference saved. For now, all site content stays in Spanish.';
+    });
+  }
+
+  if(settingDarkMode){
+    const isLight = readJSON('tc_theme', 'dark') === 'light';
+    settingDarkMode.checked = !isLight; // "modo oscuro" activado = checked
+    document.documentElement.classList.toggle('light-theme', isLight);
+    settingDarkMode.addEventListener('change', () => {
+      const dark = settingDarkMode.checked;
+      document.documentElement.classList.toggle('light-theme', !dark);
+      writeJSON('tc_theme', dark ? 'dark' : 'light');
+      if(settingStatus) settingStatus.textContent = dark ? 'Modo oscuro activado.' : 'Modo claro activado.';
+    });
+  }
+
+  if(settingNotifications){
+    settingNotifications.checked = readJSON('tc_notifications', false);
+    settingNotifications.addEventListener('change', () => {
+      writeJSON('tc_notifications', settingNotifications.checked);
+      if(!settingNotifications.checked){
+        if(settingStatus) settingStatus.textContent = 'Notificaciones desactivadas.';
+        return;
+      }
+      if(typeof Notification === 'undefined'){
+        if(settingStatus) settingStatus.textContent = 'Tu navegador no soporta notificaciones.';
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        if(settingStatus){
+          settingStatus.textContent = permission === 'granted'
+            ? 'Notificaciones activadas.'
+            : 'Activalas también desde los permisos del navegador para recibir avisos.';
+        }
+      }).catch(() => {
+        if(settingStatus) settingStatus.textContent = 'No pudimos activar las notificaciones.';
+      });
+    });
+  }
+
+  // ---------- Ayuda y soporte: FAQ ----------
+  const FAQ_ITEMS = [
+    { q: '¿Cómo compro entradas?', a: 'Elegí una película, tocá un horario y seguí los pasos: butacas, snacks y pago. Al final te mostramos la factura.' },
+    { q: '¿Puedo cancelar mi compra?', a: 'Esta es una demo: las compras son simuladas y no se procesan pagos reales, así que no hay cancelaciones que gestionar.' },
+    { q: '¿Qué métodos de pago aceptan?', a: 'En esta demo podés simular el pago con tarjeta, Mercado Pago o efectivo.' },
+    { q: '¿Cómo cambio mi contraseña?', a: 'Por ahora no hay un flujo de cambio de contraseña. Si olvidaste la tuya, podés crear una cuenta nueva.' },
+    { q: '¿Mis datos quedan guardados en algún servidor?', a: 'No. Todo se guarda únicamente en el almacenamiento local de tu navegador (localStorage).' },
+  ];
+  const faqList = document.getElementById('faqList');
+  let faqBuilt = false;
+  function buildFAQ(){
+    if(faqBuilt || !faqList) return;
+    faqBuilt = true;
+    FAQ_ITEMS.forEach(item => {
+      const wrap = document.createElement('div');
+      wrap.className = 'faq-item';
+      wrap.innerHTML = `
+        <button type="button" class="faq-question">${item.q}</button>
+        <div class="faq-answer">${item.a}</div>
+      `;
+      wrap.querySelector('.faq-question').addEventListener('click', () => wrap.classList.toggle('open'));
+      faqList.appendChild(wrap);
+    });
+  }
+
+  // ---------- Reportar un problema ----------
+  const reportSubmitBtn = document.getElementById('reportSubmitBtn');
+  const reportText = document.getElementById('reportText');
+  const reportStatus = document.getElementById('reportStatus');
+  if(reportSubmitBtn) reportSubmitBtn.addEventListener('click', () => {
+    const text = (reportText.value || '').trim();
+    if(!text){
+      if(reportStatus) reportStatus.textContent = 'Escribí una breve descripción antes de enviar.';
+      return;
+    }
+    const reports = readJSON('tc_reports', []);
+    reports.unshift({ text, date: new Date().toISOString() });
+    writeJSON('tc_reports', reports.slice(0, 20));
+    logActivity('reporte', 'Enviaste un reporte de un problema');
+    reportText.value = '';
+    if(reportStatus) reportStatus.textContent = '¡Gracias! Recibimos tu reporte (simulado).';
+  });
+
+  // ---------- Historial de actividad ----------
+  const historyList = document.getElementById('historyList');
+  function buildHistory(){
+    if(!historyList) return;
+    const items = readJSON('tc_activity', []);
+    historyList.innerHTML = '';
+    if(items.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'history-empty';
+      empty.textContent = 'Todavía no hay actividad. Mirá un tráiler o hacé una compra para verla acá.';
+      historyList.appendChild(empty);
+      return;
+    }
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'history-item';
+      row.innerHTML = `<div class="h-label">${item.label}</div><div class="h-date">${formatActivityDate(item.date)}</div>`;
+      historyList.appendChild(row);
+    });
+  }
+
+})();
+
+
+// ============================================================
+// Filtros de la home: Elegí cine / Elegí película / Formatos /
+// Idioma / Otras opciones — y botón de volver en Horarios
+// ============================================================
+(function(){
+
+  function closeAllFilterDropdowns(except){
+    document.querySelectorAll('.filter-dropdown').forEach(dd => { if(dd !== except) dd.hidden = true; });
+  }
+
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('.filter-left, .filter-right, .subfilter-wrap')){
+      closeAllFilterDropdowns();
+    }
+  });
+
+  function makeItem(label, onClick){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'filter-dropdown-item';
+    b.textContent = label;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function setupDropdown(btnId, dropdownId, buildItems){
+    const btn = document.getElementById(btnId);
+    const dropdown = document.getElementById(dropdownId);
+    if(!btn || !dropdown) return;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = !dropdown.hidden;
+      closeAllFilterDropdowns(dropdown);
+      if(wasOpen){ dropdown.hidden = true; return; }
+      dropdown.innerHTML = '';
+      buildItems(dropdown);
+      dropdown.hidden = false;
+    });
+  }
+
+  // ---------- Elegí cine (reusa la lista de cines de Horarios) ----------
+  const cineLabel = document.getElementById('filterCineLabel');
+  const cineBtn = document.getElementById('filterCineBtn');
+  setupDropdown('filterCineBtn', 'filterCineDropdown', (dropdown) => {
+    const cines = (typeof CINES !== 'undefined') ? CINES : [];
+    if(cines.length === 0){
+      dropdown.appendChild(makeItem('No hay cines cargados', () => {}));
+      return;
+    }
+    cines.forEach(c => {
+      const name = c.name || c.nombre || c;
+      dropdown.appendChild(makeItem(name, () => {
+        if(cineLabel) cineLabel.textContent = name;
+        if(cineBtn) cineBtn.classList.add('has-value');
+        dropdown.hidden = true;
+      }));
+    });
+  });
+
+  // ---------- Elegí película (reusa el carrusel + la cartelera) ----------
+  const peliculaLabel = document.getElementById('filterPeliculaLabel');
+  const peliculaBtn = document.getElementById('filterPeliculaBtn');
+  setupDropdown('filterPeliculaBtn', 'filterPeliculaDropdown', (dropdown) => {
+    const movies = Array.isArray(window.__allMovies) ? window.__allMovies : [];
+    if(movies.length === 0){
+      dropdown.appendChild(makeItem('No hay películas cargadas', () => {}));
+      return;
+    }
+    movies.forEach(m => {
+      dropdown.appendChild(makeItem(m.title, () => {
+        if(peliculaLabel) peliculaLabel.textContent = m.title;
+        if(peliculaBtn) peliculaBtn.classList.add('has-value');
+        dropdown.hidden = true;
+        // Elegir una película abre directamente su tráiler + horarios,
+        // el mismo protocolo que un póster de la home.
+        if(typeof window.__openMoviePlayer === 'function') window.__openMoviePlayer(m, peliculaBtn);
+      }));
+    });
+  });
+
+  // ---------- Simula que la cartelera "reacciona" a los filtros ----------
+  let originalGalleryOrder = null;
+  function shuffleGallery(){
+    const grid = document.getElementById('gallery-grid');
+    if(!grid) return;
+    const cards = Array.from(grid.children);
+    if(cards.length < 2) return;
+    if(!originalGalleryOrder) originalGalleryOrder = cards.slice();
+    grid.classList.add('shuffling');
+    setTimeout(() => {
+      for(let i = cards.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      cards.forEach(c => grid.appendChild(c));
+      grid.classList.remove('shuffling');
+    }, 220);
+  }
+  function restoreGalleryOrder(){
+    const grid = document.getElementById('gallery-grid');
+    if(!grid || !originalGalleryOrder) return;
+    grid.classList.add('shuffling');
+    setTimeout(() => {
+      originalGalleryOrder.forEach(c => grid.appendChild(c));
+      grid.classList.remove('shuffling');
+    }, 220);
+  }
+
+  // ---------- Formatos / Idioma / Otras opciones ----------
+  function setupSimpleFilter(btnId, dropdownId, options){
+    const btn = document.getElementById(btnId);
+    if(!btn) return;
+    const baseLabel = btn.textContent.replace('▾', '').trim();
+    setupDropdown(btnId, dropdownId, (dropdown) => {
+      options.forEach(opt => {
+        dropdown.appendChild(makeItem(opt, () => {
+          btn.textContent = opt + ' ▾';
+          btn.classList.add('has-value');
+          dropdown.hidden = true;
+          shuffleGallery();
+        }));
+      });
+      const clearItem = makeItem('Quitar filtro', () => {
+        btn.textContent = baseLabel + ' ▾';
+        btn.classList.remove('has-value');
+        dropdown.hidden = true;
+        restoreGalleryOrder();
+      });
+      clearItem.style.color = 'var(--muted)';
+      dropdown.appendChild(clearItem);
+    });
+  }
+
+  setupSimpleFilter('subfilterFormatosBtn', 'subfilterFormatosDropdown', ['2D', '3D', '4DX', 'IMAX']);
+  setupSimpleFilter('subfilterIdiomaBtn', 'subfilterIdiomaDropdown', ['Subtitulada', 'Doblada']);
+  setupSimpleFilter('subfilterOtrasBtn', 'subfilterOtrasDropdown', ['Accesibilidad auditiva', 'Accesibilidad visual', 'Salas premium']);
+
+  // ---------- Título TICKETCINE: las letras saltan al tocarlo ----------
+  const brandEl = document.querySelector('.site-header .brand');
+  if(brandEl){
+    const text = brandEl.textContent;
+    brandEl.textContent = '';
+    brandEl.style.cursor = 'pointer';
+    const letterEls = [...text].map(ch => {
+      const span = document.createElement('span');
+      span.className = 'brand-letter';
+      span.textContent = ch === ' ' ? '\u00A0' : ch;
+      brandEl.appendChild(span);
+      return span;
+    });
+    brandEl.addEventListener('click', () => {
+      letterEls.forEach(el => el.classList.remove('brand-bounce'));
+      void brandEl.offsetWidth; // fuerza el reflow para poder repetir la animación
+      letterEls.forEach((el, i) => {
+        el.style.animationDelay = (i * 0.05) + 's';
+        el.classList.add('brand-bounce');
+      });
+    });
+  }
+
+  // ---------- Botón "Volver" en la pantalla HORARIOS ----------
+  const backBtnHorarios = document.getElementById('backBtnHorarios');
+  if(backBtnHorarios) backBtnHorarios.addEventListener('click', () => {
+    const horariosApp = document.getElementById('horarios-app');
+    const searchApp = document.getElementById('search-app');
+    const home = document.getElementById('ticketcine-home');
+    if(horariosApp) horariosApp.hidden = true;
+    if(searchApp) searchApp.hidden = true;
+    if(home) home.hidden = false;
+    document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+    const inicioBtn = document.querySelector('.bottom-nav-item[data-section="inicio"]');
+    if(inicioBtn) inicioBtn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
+
+})();

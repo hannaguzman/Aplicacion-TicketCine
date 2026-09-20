@@ -1741,3 +1741,34 @@ html.light-theme .side-panel{ background:#ffffff; }
 /* ======================================================= */
 .gallery-grid .card{ transition: opacity .22s ease, transform .22s ease; }
 .gallery-grid.shuffling .card{ opacity: 0; transform: translateY(10px) scale(0.97); }
+
+
+/* ======================================================= */
+/* Aviso emergente de Clips: sinopsis o "ya no está en       */
+/* cartelera"                                                 */
+/* ======================================================= */
+.clip-notice-toast{
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%) translateY(16px);
+  max-width: 440px;
+  width: calc(100% - 40px);
+  background: rgba(12,10,15,0.94);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #f2ede4;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: center;
+  z-index: 6000;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.clip-notice-toast.visible{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

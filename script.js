@@ -461,6 +461,53 @@ document.addEventListener('DOMContentLoaded', ()=>{
     return closest;
   }
 
+  function findMovieByTitle(title){
+    const movies = Array.isArray(window.__allMovies) ? window.__allMovies : [];
+    const target = (title || '').trim().toLowerCase();
+    return movies.find(m => (m.title || '').trim().toLowerCase() === target) || null;
+  }
+
+  function showClipNotice(message){
+    let toast = document.getElementById('clipNoticeToast');
+    if(!toast){
+      toast = document.createElement('div');
+      toast.id = 'clipNoticeToast';
+      toast.className = 'clip-notice-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('visible');
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => toast.classList.remove('visible'), 3800);
+  }
+
+  function showMovieInfo(title){
+    const movie = findMovieByTitle(title);
+    if(movie && movie.synopsis){
+      showClipNotice(movie.synopsis);
+    } else {
+      showClipNotice('Esta película ya no está en cartelera.');
+    }
+  }
+
+  function goToFunciones(title, opener){
+    const movie = findMovieByTitle(title);
+    if(!movie){
+      showClipNotice('Esta película ya no está en cartelera.');
+      return;
+    }
+    // Sale de Clips y muestra la home detrás del modal de tráiler + horarios,
+    // igual que cuando entrás por la cartelera.
+    pauseAllClips();
+    clipsApp.hidden = true;
+    const home = document.getElementById('ticketcine-home');
+    if(home) home.hidden = false;
+    document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+    const inicioBtn = document.querySelector('.bottom-nav-item[data-section="inicio"]');
+    if(inicioBtn) inicioBtn.classList.add('active');
+    if(typeof window.__openMoviePlayer === 'function') window.__openMoviePlayer(movie, opener);
+  }
+
   function buildClipsFeed(){
     if(clipsBuilt) return;
     clipsBuilt = true;
@@ -494,6 +541,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
         clipsMuted = !clipsMuted;
         clipsFeed.querySelectorAll('.sound-btn').forEach(b => b.textContent = clipsMuted ? '🔇' : '🔈');
         clipPostCmd(panel.querySelector('iframe'), clipsMuted ? 'mute' : 'unMute');
+      });
+
+      panel.querySelector('.btn.primary').addEventListener('click', (e) => {
+        e.stopPropagation();
+        goToFunciones(v.title, e.currentTarget);
+      });
+
+      panel.querySelector('.info .btn:not(.primary)').addEventListener('click', (e) => {
+        e.stopPropagation();
+        showMovieInfo(v.title);
       });
 
       clipsFeed.appendChild(panel);

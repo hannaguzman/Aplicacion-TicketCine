@@ -1673,6 +1673,65 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   }
 
+  // ---------- Tema súper oscuro: efecto linterna ----------
+  const settingSuperDark = document.getElementById('settingSuperDark');
+  const superDarkOverlay = document.getElementById('superDarkOverlay');
+
+  if(superDarkOverlay){
+    const isDesktopPointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    function setLightPos(x, y){
+      superDarkOverlay.style.setProperty('--x', x + 'px');
+      superDarkOverlay.style.setProperty('--y', y + 'px');
+    }
+    function setLightOn(on){
+      superDarkOverlay.style.setProperty('--r', on ? '150px' : '0px');
+    }
+
+    if(isDesktopPointer){
+      // En compu: la linterna sigue al mouse todo el tiempo
+      setLightOn(true);
+      document.addEventListener('mousemove', (e) => {
+        if(!superDarkOverlay.classList.contains('active')) return;
+        setLightPos(e.clientX, e.clientY);
+      });
+    } else {
+      // En celular: se ilumina solo mientras mantenés el dedo apretado
+      setLightOn(false);
+      document.addEventListener('touchstart', (e) => {
+        if(!superDarkOverlay.classList.contains('active')) return;
+        const t = e.touches[0];
+        if(!t) return;
+        setLightPos(t.clientX, t.clientY);
+        setLightOn(true);
+      }, { passive: true });
+      document.addEventListener('touchmove', (e) => {
+        if(!superDarkOverlay.classList.contains('active')) return;
+        const t = e.touches[0];
+        if(!t) return;
+        setLightPos(t.clientX, t.clientY);
+      }, { passive: true });
+      document.addEventListener('touchend', () => {
+        if(!superDarkOverlay.classList.contains('active')) return;
+        setLightOn(false);
+      });
+    }
+  }
+
+  if(settingSuperDark){
+    const superDarkOn = readJSON('tc_superdark', false);
+    settingSuperDark.checked = superDarkOn;
+    if(superDarkOverlay) superDarkOverlay.classList.toggle('active', superDarkOn);
+    settingSuperDark.addEventListener('change', () => {
+      const on = settingSuperDark.checked;
+      writeJSON('tc_superdark', on);
+      if(superDarkOverlay) superDarkOverlay.classList.toggle('active', on);
+      if(settingStatus) settingStatus.textContent = on
+        ? 'Tema súper oscuro activado. Movés la linterna con el mouse o, en el celular, manteniendo el dedo apretado.'
+        : 'Tema súper oscuro desactivado.';
+    });
+  }
+
   if(settingNotifications){
     settingNotifications.checked = readJSON('tc_notifications', false);
     settingNotifications.addEventListener('change', () => {

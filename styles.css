@@ -64,7 +64,8 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--white)}
 
 /* Header fixed */
 .site-header{position:fixed;top:0;left:0;right:0;height:64px;background:#070707;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1200}
-.hamburger,.user{background:transparent;border:none;color:var(--white);font-size:20px;cursor:pointer}
+.hamburger,.user{background:transparent;border:none;color:var(--white);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.user-icon{width:22px;height:22px}
 .brand{font-weight:900;letter-spacing:6px;font-size:20px}
 
 /* Carousel (under header) */

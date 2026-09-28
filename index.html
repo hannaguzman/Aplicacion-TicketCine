@@ -85,7 +85,30 @@
     </section>
   </main>
 
-  <!-- Player modal / inline player (hidden by default). Opens when user clicks poster -->
+  <!-- Floating quick-buy button -->
+  <button id="quick-buy" class="quick-buy">⚡ COMPRA RÁPIDA ▾</button>
+
+  <!-- Barra de navegación inferior fija: Inicio / Clips / Buscar -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Navegación principal">
+    <button class="bottom-nav-item active" data-section="inicio" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8"></path><path d="M5 10v10h5v-6h4v6h5V10"></path></svg>
+      <span>Inicio</span>
+    </button>
+    <button class="bottom-nav-item" data-section="clips" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M8 5v14M16 5v14M3 9h5M16 9h5M3 15h5M16 15h5"></path></svg>
+      <span>Clips</span>
+    </button>
+    <button class="bottom-nav-item" data-section="buscar" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <span>Buscar</span>
+    </button>
+  </nav>
+
+  </div>
+
+  <!-- Player modal / inline player (hidden por defecto). Vive FUERA de #ticketcine-home
+       a propósito: así se puede abrir y ver bien sin importar si estás en Inicio,
+       Buscar o Clips, en vez de quedar escondido junto con la sección que lo abrió. -->
   <div id="player-overlay" class="player-overlay" aria-hidden="true">
     <div class="player-backdrop" id="player-backdrop"></div>
     <div class="player-container" role="dialog" aria-modal="true" aria-label="Reproductor de tráiler">
@@ -104,7 +127,7 @@
     </div>
   </div>
 
-  <!-- Buy modal (HTML/CSS form) -->
+  <!-- Buy modal (HTML/CSS form) — también fuera de #ticketcine-home por la misma razón -->
   <div id="buy-overlay" class="buy-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Comprar entradas">
     <div class="buy-backdrop" id="buy-backdrop"></div>
     <div class="buy-container">
@@ -147,27 +170,6 @@
         </div>
       </form>
     </div>
-  </div>
-
-  <!-- Floating quick-buy button -->
-  <button id="quick-buy" class="quick-buy">⚡ COMPRA RÁPIDA ▾</button>
-
-  <!-- Barra de navegación inferior fija: Inicio / Clips / Buscar -->
-  <nav class="bottom-nav" id="bottomNav" aria-label="Navegación principal">
-    <button class="bottom-nav-item active" data-section="inicio" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8"></path><path d="M5 10v10h5v-6h4v6h5V10"></path></svg>
-      <span>Inicio</span>
-    </button>
-    <button class="bottom-nav-item" data-section="clips" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M8 5v14M16 5v14M3 9h5M16 9h5M3 15h5M16 15h5"></path></svg>
-      <span>Clips</span>
-    </button>
-    <button class="bottom-nav-item" data-section="buscar" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
-      <span>Buscar</span>
-    </button>
-  </nav>
-
   </div>
 
   <!-- ======= Flujo de Horarios / Butacas / Snacks / Pago / Factura ======= -->
@@ -408,7 +410,7 @@
         <button type="button" class="user-btn user-btn-primary" id="loginSubmitBtn">Iniciar sesión</button>
         <button type="button" class="user-btn user-btn-secondary" id="goRegisterBtn">Crear cuenta</button>
       </div>
-
+<!-- Aplicacion de cine creada por Hanna Guzman, finalizada el 28/09/2026-->
       <!-- REGISTER -->
       <div class="user-view" id="userViewRegister" hidden>
         <h2 class="user-title">Crear cuenta</h2>
